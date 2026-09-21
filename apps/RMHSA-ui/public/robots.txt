@@ -1,0 +1,14 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+Disallow: /admin
+Disallow: /api/
+
+# Host
+Host: https://www.rmhsagulu.com/
+
+# Sitemaps
+Sitemap: https://www.rmhsagulu.com/sitemap.xml

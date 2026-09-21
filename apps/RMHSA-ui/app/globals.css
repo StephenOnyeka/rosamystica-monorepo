@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------
+   Design tokens (migrated from tailwind.config.js)
+   - primary / secondary kept as-is
+   - contingentColor -> contingent, contingentColor2 -> contingent-2,
+     contingentText -> contingent-text
+   - Font families are wired to the next/font CSS variables set in
+     app/layout.tsx (and fixed to load "Playfair Display" correctly).
+------------------------------------------------------------------- */
+@theme inline {
+  --font-playfair: var(--font-playfair-display), "Playfair Display", "Playfair",
+    serif;
+  --font-poppins: var(--font-poppins-sans), "Poppins", sans-serif;
+}
+
+@theme {
+  --color-primary: #0099ff;
+  --color-contingent: #00416d;
+  --color-contingent-2: #006db6;
+  --color-contingent-text: #002b48;
+  --color-secondary: #f8941c;
+
+  /* The original tailwind.config.js remapped the rounded-sm/md/lg
+     utilities to an undefined var(--radius), so they always computed
+     to 0px (square corners). Keeping 0px preserves that exact
+     rendering. Other radii (rounded-full, rounded-xl, ...) are
+     unaffected. */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+}
+
+/* ------------------------------------------------------------------
+   Legacy global styles (merged from styles/index.css)
+------------------------------------------------------------------- */
+* {
+  scroll-behavior: smooth;
+}
+
+#Donor {
+  padding-top: 120px;
+  padding-bottom: 120px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-image: linear-gradient(
+      rgba(0, 153, 255, 0.8),
+      rgba(0, 153, 255, 0.7)
+    ),
+    url("/the-samford-clock-tower-jc-findley.jpg");
+}
+
+/* @layer base, not unlayered: in the original v3 build these element
+   rules lost to class utilities (e.g. border-gray-200) by specificity.
+   Unlayered in v4 they would instead beat @layer utilities and repaint
+   every <hr> blue. */
+@layer base {
+  hr {
+    border-color: #006db6;
+  }
+}
+
+#Contact_container-3 input::placeholder,
+#Contact_container-3 textarea::placeholder {
+  color: rgba(0, 0, 0, 0.666);
+}
+
+#Contact_container-3 input:focus,
+#Contact_container-3 textarea:focus {
+  outline: none;
+}
+
+#accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: 0.3s ease-in-out;
+}
+
+.school {
+  background-image: linear-gradient(
+      rgba(0, 153, 255, 0.2),
+      rgba(0, 153, 255, 0.2)
+    ),
+    url("/images/R-entrance.jpg");
+}
+
+.added {
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+.loader {
+  color: #000;
+  width: 4px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: 19px 0 0 7px, 38px 0 0 3px, 57px 0 0 0;
+  transform: translateX(-38px);
+  animation: l21 0.5s infinite alternate linear;
+}
+
+@keyframes l21 {
+  50% {
+    box-shadow: 19px 0 0 3px, 38px 0 0 7px, 57px 0 0 3px;
+  }
+  100% {
+    box-shadow: 19px 0 0 0, 38px 0 0 3px, 57px 0 0 7px;
+  }
+}
+
+.transition-max-height {
+  transition: max-height 3s ease-in;
+}
+
+/* ------------------------------------------------------------------
+   Navbar styles (merged from styles/nav.css)
+------------------------------------------------------------------- */
+/* @layer base, not unlayered: same reason as the `hr` rule above.
+   In the original v3 build class utilities such as text-white on the
+   mobile sidebar links won over `nav a { color: black }` by
+   specificity; unlayered here they would be overridden instead. */
+@layer base {
+  nav {
+    background-color: white;
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  nav ul {
+    width: 100%;
+    list-style: none;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  nav li {
+    height: 50px;
+  }
+
+  nav a {
+    height: 100%;
+    width: 100%;
+    padding: 0 30px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    color: black;
+  }
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 250px;
+  z-index: 999;
+  backdrop-filter: blur(12px);
+  box-shadow: -10px 0 10px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  display: none;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.sidebar li {
+  width: 100%;
+}
+
+.sidebar a {
+  width: 100%;
+}
+
+@media (max-width: 1023px) {
+  .hideOnMobile {
+    display: none;
+  }
+  .menu-button {
+    display: block;
+  }
+}
+
+@media (min-width: 500px) {
+  .sidebar {
+    width: 450px;
+  }
+  .tog {
+    gap: 14rem;
+  }
+}
