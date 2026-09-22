@@ -4,8 +4,6 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "dev:ui": "turbo run dev --filter=rmhsa-ui",
-    "dev:server": "turbo run dev --filter=rmhsa-server",
     "lint": "turbo run lint",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
@@ -28,5 +26,11 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/swagger": "^11.4.7",
+    "swagger-ui-express": "^5.0.1"
+  }
 }

@@ -8,7 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { MailService } from '../mail/mail.service';
 import { Subscribe } from '../subscriptions/schemas/subscribe.schema';
-import {
+import { 
   CreateNotificationDto,
   UpdateNotificationDto,
 } from './dto/notifications.dto';

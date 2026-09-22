@@ -1,19 +1,14 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailModule } from '../mail/mail.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
-import {
-  Notification,
-  NotificationSchema,
-} from './schemas/notification.schema';
+import { Notification } from './entities/notification.entity';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Notification.name, schema: NotificationSchema },
-    ]),
+    TypeOrmModule.forFeature([Notification]),
     // Provides the Subscribe model (for subscriber emails).
     SubscriptionsModule,
     MailModule,

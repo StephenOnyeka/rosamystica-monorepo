@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
-import type { Types } from 'mongoose';
 import BrevoTransport, {
   type BrevoMessageInfo,
 } from 'nodemailer-brevo-transport';
@@ -9,7 +8,7 @@ import BrevoTransport, {
 interface MailContent {
   title: string;
   desc?: string;
-  _id: Types.ObjectId;
+  id: string; // UUID
 }
 
 export interface ContactMessage {
@@ -44,7 +43,7 @@ export class MailService {
         to: subscribers.join(','),
         subject: `New Blog Post: ${blog.title}`,
         text: 'Hello',
-        html: `<p>A new blog post has been published!</p><p><strong>Title:</strong> ${blog.title}</p><p><strong>Description:</strong> ${blog.desc}</p><p><a href="http://localhost:3000/blogs/${blog._id.toString()}">Read more</a></p>`,
+        html: `<p>A new blog post has been published!</p><p><strong>Title:</strong> ${blog.title}</p><p><strong>Description:</strong> ${blog.desc}</p><p><a href="http://localhost:3000/blogs/${blog.id}">Read more</a></p>`,
       });
       this.logger.log('Email sent successfully!');
     } catch (error) {
@@ -64,7 +63,7 @@ export class MailService {
         to: subscribers.join(','),
         subject: `Notification: ${notification.title}`,
         text: 'Hello',
-        html: `<p>A new notification post has been published!</p><p><strong>Title:</strong> ${notification.title}</p><p><strong>Description:</strong> ${notification.desc}</p><p><a href="http://localhost:3000/notifications/${notification._id.toString()}">Read more</a></p>`,
+        html: `<p>A new notification post has been published!</p><p><strong>Title:</strong> ${notification.title}</p><p><strong>Description:</strong> ${notification.desc}</p><p><a href="http://localhost:3000/notifications/${notification.id}">Read more</a></p>`,
       });
       this.logger.log('Email sent successfully!');
     } catch (error) {

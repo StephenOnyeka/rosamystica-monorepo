@@ -1,19 +1,15 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Subscribe, SubscribeSchema } from './schemas/subscribe.schema';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Subscribe } from './entities/subscribe.entity';
 import { SubscriptionsController } from './subscriptions.controller';
 import { SubscriptionsService } from './subscriptions.service';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: Subscribe.name, schema: SubscribeSchema },
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([Subscribe])],
   controllers: [SubscriptionsController],
   providers: [SubscriptionsService],
   // Re-exported so Blogs/Notifications can read subscribers' emails, the way
   // the legacy controllers required subscribeModel directly.
-  exports: [MongooseModule],
+  exports: [TypeOrmModule],
 })
 export class SubscriptionsModule {}

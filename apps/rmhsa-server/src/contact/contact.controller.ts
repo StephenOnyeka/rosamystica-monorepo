@@ -6,9 +6,11 @@ import {
   Logger,
   Post,
 } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MailService } from '../mail/mail.service';
 import { ContactDto } from './dto/contact.dto';
 
+@ApiTags('contact')
 @Controller()
 export class ContactController {
   private readonly logger = new Logger(ContactController.name);
@@ -19,6 +21,10 @@ export class ContactController {
   // prefix) and always answers with a JSON object.
   @Post('submitContact')
   @HttpCode(200)
+  @ApiOperation({ summary: 'Submit contact form message' })
+  @ApiResponse({ status: 200, description: 'Message sent successfully!' })
+  @ApiResponse({ status: 500, description: 'Failed to send message.' })
+  @ApiBody({ type: ContactDto })
   async submitContact(
     @Body() contactDto: ContactDto,
   ): Promise<{ success: boolean; message: string }> {
