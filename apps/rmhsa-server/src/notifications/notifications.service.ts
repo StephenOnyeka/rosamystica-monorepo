@@ -4,21 +4,18 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { MailService } from '../mail/mail.service';
-import { Subscribe } from '../subscriptions/schemas/subscribe.schema';
-import { 
+import { Subscribe } from '../subscriptions/entities/subscribe.entity';
+import {
   CreateNotificationDto,
   UpdateNotificationDto,
 } from './dto/notifications.dto';
-import {
-  Notification,
-  NotificationDocument,
-} from './schemas/notification.schema';
+import { Notification } from './entities/notification.entity';
 
 export interface PaginatedNotifications {
-  notifications: NotificationDocument[];
+  notifications: Notification[];
   totalPosts: number;
   totalPages: number;
 }
@@ -26,10 +23,10 @@ export interface PaginatedNotifications {
 @Injectable()
 export class NotificationsService {
   constructor(
-    @InjectModel(Notification.name)
-    private readonly notificationModel: Model<Notification>,
-    @InjectModel(Subscribe.name)
-    private readonly subscribeModel: Model<Subscribe>,
+    @InjectRepository(Notification)
+    private readonly notificationRepository: Repository<Notification>,
+    @InjectRepository(Subscribe)
+    private readonly subscribeRepository: Repository<Subscribe>,
     private readonly mailService: MailService,
   ) {}
 
@@ -44,14 +41,12 @@ export class NotificationsService {
 
     try {
       // Fetch notifications with pagination
-      const notifications = await this.notificationModel
-        .find({})
-        .sort({ createdAt: -1 }) // Sort by creation date
-        .skip(skip) // Skip the previous pages
-        .limit(perPage); // Limit the number of notifications returned
-
-      // Get the total count of notifications
-      const totalPosts = await this.notificationModel.countDocuments();
+      const [notifications, totalPosts] =
+        await this.notificationRepository.findAndCount({
+          order: { createdAt: 'DESC' },
+          skip,
+          take: perPage,
+        });
 
       // Calculate total pages
       const totalPages = Math.ceil(totalPosts / perPage);
@@ -65,38 +60,37 @@ export class NotificationsService {
   }
 
   // Ported from notificationController.js: getNotification (single item).
-  async getNotification(id: string): Promise<NotificationDocument> {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new NotFoundException({ error: 'No such notification' });
-    }
-
-    const notification = await this.notificationModel.findById(id);
+  async getNotification(id: string): Promise<Notification> {
+    const notification = await this.notificationRepository.findOne({
+      where: { id } as any,
+    });
 
     if (!notification) {
-      throw new BadRequestException({ error: 'No such notification' });
+      throw new NotFoundException({ error: 'No such notification' });
     }
 
     return notification;
   }
 
-  // Ported from notificationController.js: createNotification. Creation
-  // failures answer 400 { error } (unlike blogs, whose catch answered 401).
+  // Ported from notificationController.js: createNotification.
   async createNotification(
     createNotificationDto: CreateNotificationDto,
-  ): Promise<NotificationDocument> {
+  ): Promise<Notification> {
     const { title, desc, body } = createNotificationDto;
 
     try {
       // Add doc to db
-      const notification = await this.notificationModel.create({
+      const notification = await this.notificationRepository.save({
         title,
         desc,
         body,
       });
 
       // Fetch subscribers' emails
-      const subscribers = await this.subscribeModel.find({}).select('email');
-      const subscriberEmails = subscribers.map((sub) => sub.email);
+      const subscribers = await this.subscribeRepository.find();
+      const subscriberEmails = subscribers
+        .map((sub) => sub.email)
+        .filter((email): email is string => !!email);
 
       // Send email notification
       await this.mailService.sendNotificationNotification(
@@ -113,38 +107,34 @@ export class NotificationsService {
   }
 
   // Ported from notificationController.js: deleteNotification.
-  async deleteNotification(id: string): Promise<NotificationDocument> {
-    if (!Types.ObjectId.isValid(id)) {
+  async deleteNotification(id: string): Promise<Notification> {
+    const notification = await this.notificationRepository.findOne({
+      where: { id } as any,
+    });
+
+    if (!notification) {
       throw new NotFoundException({ error: 'No such notification' });
     }
 
-    const notification = await this.notificationModel.findByIdAndDelete(id);
-
-    if (!notification) {
-      throw new BadRequestException({ error: 'No such notification' });
-    }
+    await this.notificationRepository.delete(id);
 
     return notification;
   }
 
-  // Ported from notificationController.js: updateNotification. Runs without
-  // { new: true }, so the pre-update document is returned (legacy behavior).
+  // Ported from notificationController.js: updateNotification.
   async updateNotification(
     id: string,
     updateNotificationDto: UpdateNotificationDto,
-  ): Promise<NotificationDocument> {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new NotFoundException({ error: 'No such notification' });
-    }
-
-    const notification = await this.notificationModel.findByIdAndUpdate(id, {
-      ...updateNotificationDto,
+  ): Promise<Notification> {
+    const notification = await this.notificationRepository.findOne({
+      where: { id } as any,
     });
 
     if (!notification) {
-      throw new BadRequestException({ error: 'No such notification' });
+      throw new NotFoundException({ error: 'No such notification' });
     }
 
-    return notification;
+    Object.assign(notification, updateNotificationDto);
+    return this.notificationRepository.save(notification);
   }
 }
