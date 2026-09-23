@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowLeft2 } from "iconsax-react";
+import { ArrowLeft2 } from "iconsax";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
 import ScrollDiv from "@/components/Scroll";

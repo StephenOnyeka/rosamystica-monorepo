@@ -98,7 +98,7 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
                   {/* <label>Blog Title:</label> */}
                   {/* <br /> */}
                   <input
-                    className={`bg-gray-200 p-2 mb-4 mt-2 w-full text-xl placeholder:text-xl ${
+                    className={`bg-gray-200 p-2 mb-4 mt-2 w-full text-xl placeholder:text-2xl ${
                       emptyFields.includes("title") ? "error" : ""
                     }`}
                     type="text"
@@ -122,11 +122,11 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
                   {/* <label>Body:</label> */}
                   {/* <br /> */}
                   <ReactQuill
-                    theme="bubble"
+                    theme="snow"
                     onChange={setBody}
                     value={body}
                     placeholder="What's on your mind..."
-                    className={`p-2 mb-4 mt-2 h-[70vh] max-w-full bg-gray-200 rounded-xl ${
+                    className={`p-2 mb-4 mt-2 h-[70vh] max-w-full bg-gray-200 rounded-xl placeholder:text-xl ${
                       emptyFields.includes("body") ? "error" : ""
                     }`}
                     modules={{

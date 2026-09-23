@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { AddCircle } from "iconsax-react";
+import { AddCircle } from "iconsax";
 
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
@@ -36,7 +36,7 @@ function BlogsContent() {
     const fetchBlogs = async () => {
       try {
         const data = await customFetch<BlogsApiResponse>(
-          `/api/blogs?page=${currentPage}&limit=${postsPerPage}`
+          `/api/blogs?page=${currentPage}&limit=${postsPerPage}`,
         );
         setTotalPages(data.totalPages);
         dispatch({ type: "SET_BLOGS", payload: data.blogs });
