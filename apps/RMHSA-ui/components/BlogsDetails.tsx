@@ -16,9 +16,10 @@ function BlogsDetails({ blog }: BlogsDetailsProps) {
   const { dispatch } = useBlogsContext();
   const { isAdmin } = useAdminContext();
 
+  const blogId = blog.id || blog._id || "";
+
   const handleClick = async () => {
     try {
-      const blogId = blog._id || (blog as any).id;
       const json = await customFetch<Blog>(`/api/blogs/${blogId}`, {
         method: "DELETE",
       });
@@ -32,7 +33,7 @@ function BlogsDetails({ blog }: BlogsDetailsProps) {
     <div>
       {/* How the blogs render in an array of all blogs */}
 
-      <div key={blog._id} className="bg-white my-4 font-poppins">
+      <div key={blogId} className="bg-white my-4 font-poppins">
         {/* <img src={blog.titleImg} alt="Preview" width={500} height={500} /> */}
         <p className="text-sm text-slate-400 font-normal">
           {formatDistanceToNow(new Date(blog.createdAt), {
@@ -40,7 +41,7 @@ function BlogsDetails({ blog }: BlogsDetailsProps) {
           })}
         </p>
         <br />
-        <Link key={blog._id} href={`/blogs/${blog._id}`}>
+        <Link href={`/blogs/${blogId}`}>
           <p className=" font-bold text-2xl hover:text-red-400">{blog.title}</p>
         </Link>
         <br />

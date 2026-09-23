@@ -53,7 +53,7 @@ export default function BlogPost({ id }: { id: string }) {
           </svg>
         </div>
       </Link>
-      <div key={blog._id} className="bg-white p-6 mb-6">
+      <div key={blog.id || blog._id || ""} className="bg-white p-6 mb-6">
         <p className="font-bold text-center text-3xl">{blog.title}</p>
         <br />
         <div

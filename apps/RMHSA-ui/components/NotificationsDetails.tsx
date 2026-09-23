@@ -17,9 +17,10 @@ function NotificationsDetails({ notification }: NotificationsDetailsProps) {
   const { dispatch } = useNotificationsContext();
   const { isAdmin } = useAdminContext();
 
+  const notifId = notification.id || notification._id || "";
+
   const handleClick = async () => {
     try {
-      const notifId = notification._id || (notification as any).id;
       const json = await customFetch<Notification>(
         `/api/notifications/${notifId}`,
         {
@@ -36,7 +37,7 @@ function NotificationsDetails({ notification }: NotificationsDetailsProps) {
     <div>
       {/* How the notifications render in an array of all notifications */}
 
-      <div key={notification._id} className="bg-white my-4 font-poppins">
+      <div key={notifId} className="bg-white my-4 font-poppins">
         {/* <img src={notification.titleImg} alt="Preview" width={500} height={500} /> */}
         <div className="flex justify-between ">
           <div>
@@ -46,10 +47,7 @@ function NotificationsDetails({ notification }: NotificationsDetailsProps) {
               })}
             </p>
             <br />
-            <Link
-              key={notification._id}
-              href={`/notifications/${notification._id}`}
-            >
+            <Link href={`/notifications/${notifId}`}>
               <p className=" font-bold text-2xl hover:text-red-400">
                 {notification.title}
               </p>

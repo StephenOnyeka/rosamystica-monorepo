@@ -19,7 +19,7 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
         url: configService.get<string>('DATABASE_URL'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-        synchronize: false, // IMPORTANT: Set to true ONLY in development!
+        synchronize: process.env.NODE_ENV !== 'production', // Automatically creates tables in dev/local environment
         logging: false, // Enable for debugging, set to ['query', 'error', 'warn'] for more info
       }),
     }),

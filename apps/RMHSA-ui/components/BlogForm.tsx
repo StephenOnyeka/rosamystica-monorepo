@@ -85,10 +85,8 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
               </div>
             </div>
           ) : (
-            <form
-              onSubmit={handleSubmit}
-              className="w-full full pt-8"
-            >
+            <form onSubmit={handleSubmit} className="w-full full pt-8">
+              {/* <div className="max-w-4xl mx-auto"> */}
               <h3 className="text-2xl font-semibold mb-8">Add a New Blog</h3>
               <div className="w-full content-center">
                 <div>
@@ -144,6 +142,7 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
               >
                 Preview
               </button>
+              {/* </div> */}
             </form>
           )}
           {error && (
@@ -158,4 +157,3 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
 }
 
 export default BlogForm;
-

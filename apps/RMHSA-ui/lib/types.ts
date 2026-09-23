@@ -1,7 +1,8 @@
 // Shared entity types for data returned by the RMHSA backend API.
 
 export interface Blog {
-  _id: string;
+  id?: string;
+  _id?: string;
   title: string;
   desc: string;
   body: string;
@@ -12,7 +13,8 @@ export interface Blog {
 }
 
 export interface Notification {
-  _id: string;
+  id?: string;
+  _id?: string;
   title: string;
   desc: string;
   body: string;
@@ -22,7 +24,8 @@ export interface Notification {
 }
 
 export interface Subscription {
-  _id: string;
+  id?: string;
+  _id?: string;
   email: string;
   createdAt?: string;
   [key: string]: unknown;
