@@ -7,14 +7,13 @@ interface NotificationPageProps {
   params: Promise<{ id: string }>;
 }
 
+import { customFetch } from "@/lib/api";
+
 async function getNotification(id: string): Promise<Notification | null> {
   try {
-    const response = await fetch(
-      `https://rmhsa-servered.vercel.app/api/notifications/${id}`,
-      { cache: "no-store" },
-    );
-    if (!response.ok) return null;
-    return (await response.json()) as Notification;
+    return await customFetch<Notification>(`/api/notifications/${id}`, {
+      skipCache: true,
+    });
   } catch {
     return null;
   }

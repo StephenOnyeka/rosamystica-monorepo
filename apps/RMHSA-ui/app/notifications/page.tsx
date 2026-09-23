@@ -12,6 +12,7 @@ import Loading from "@/components/loading";
 import { useNotificationsContext } from "@/hooks/useNotificationsContext";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Notification } from "@/lib/types";
+import { customFetch } from "@/lib/api";
 
 // Dynamically import NotificationForm with no SSR
 const NotificationForm = dynamic(
@@ -40,17 +41,15 @@ function NotificationsContent() {
 
   useEffect(() => {
     const fetchNotifications = async () => {
-      const response = await fetch(
-        `https://rmhsa-servered.vercel.app/api/notifications?page=${currentPage}&limit=${postsPerPage}`,
-      );
-      const data = (await response.json()) as NotificationsApiResponse;
-
-      if (response.ok) {
+      try {
+        const data = await customFetch<NotificationsApiResponse>(
+          `/api/notifications?page=${currentPage}&limit=${postsPerPage}`
+        );
         setTotalPages(data.totalPages);
-        dispatch({ type: "SET_NOTIFICATIONS", payload: data.notifications }); // Make sure you're dispatching the notifications
-        setLoading(false);
-      } else {
-        console.error("Failed to fetch notifications:", data);
+        dispatch({ type: "SET_NOTIFICATIONS", payload: data.notifications });
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      } finally {
         setLoading(false);
       }
     };

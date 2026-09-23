@@ -12,6 +12,7 @@ import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
 import Footer from "@/components/Footer";
 import { useSubscriptionsContext } from "@/hooks/useSubscriptionsContext";
+import { customFetch } from "@/lib/api";
 import { BsBoxArrowUpRight } from "react-icons/bs";
 import type { Subscription } from "@/lib/types";
 
@@ -39,31 +40,22 @@ function Home1() {
     setMssg(null);
     setWarn(null);
 
-    const response = await fetch(
-      "https://rmhsa-servered.vercel.app/api/subscriptions",
-      {
+    try {
+      const json = await customFetch<SubscriptionResponse>("/api/subscriptions", {
         method: "POST",
         body: JSON.stringify(subscription),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    );
-    const json = (await response.json()) as SubscriptionResponse;
-    if (response.ok) {
+      });
       setEmail("");
-      // setError() // Reset error on success
       console.log("new subscription added", json);
       setMssg(json.mssg ?? null);
-
-      //dispatch action to add the new subscription to the context
       dispatch({ type: "CREATE_SUBSCRIPTION", payload: json });
-    } else {
-      // setError(json.error); //Set error message
-      if (json.error) {
-        setError(json.error);
-      } else if (json.warn) {
-        setWarn(json.warn); //set warning message
+    } catch (err: any) {
+      if (err.data?.error) {
+        setError(err.data.error);
+      } else if (err.data?.warn) {
+        setWarn(err.data.warn);
+      } else {
+        setError(err.message || "Failed to subscribe");
       }
     }
   };

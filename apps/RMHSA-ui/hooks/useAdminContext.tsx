@@ -8,6 +8,7 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
+import { customFetch } from "../lib/api";
 
 export interface AdminContextValue {
   isAdmin: boolean;
@@ -22,18 +23,12 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   const verifyAdmin = async (token: string) => {
     try {
-      // const response = await fetch("http://localhost:5000/api/admin/verify", {
-      const response = await fetch(
-        "https://rmhsa-servered.vercel.app/api/admin/verify",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      setIsAdmin(response.ok);
+      await customFetch("/api/admin/verify", {
+        method: "GET",
+        token,
+        skipCache: true,
+      });
+      setIsAdmin(true);
     } catch {
       setIsAdmin(false);
     }
@@ -51,16 +46,12 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
     const verify = async () => {
       try {
-        const response = await fetch(
-          "https://rmhsa-servered.vercel.app/api/admin/verify",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${storedToken}`,
-            },
-          },
-        );
-        if (active) setIsAdmin(response.ok);
+        await customFetch("/api/admin/verify", {
+          method: "GET",
+          token: storedToken,
+          skipCache: true,
+        });
+        if (active) setIsAdmin(true);
       } catch {
         if (active) setIsAdmin(false);
       }

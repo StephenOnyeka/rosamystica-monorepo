@@ -11,21 +11,24 @@ interface NotificationsDetailsProps {
   notification: Notification;
 }
 
+import { customFetch } from "@/lib/api";
+
 function NotificationsDetails({ notification }: NotificationsDetailsProps) {
   const { dispatch } = useNotificationsContext();
   const { isAdmin } = useAdminContext();
 
   const handleClick = async () => {
-    const response = await fetch(
-      "https://rmhsa-servered.vercel.app/api/notifications/" +
-        notification._id,
-      {
-        method: "DELETE",
-      },
-    );
-    const json = (await response.json()) as Notification;
-    if (response.ok) {
+    try {
+      const notifId = notification._id || (notification as any).id;
+      const json = await customFetch<Notification>(
+        `/api/notifications/${notifId}`,
+        {
+          method: "DELETE",
+        }
+      );
       dispatch({ type: "DELETE_NOTIFICATION", payload: json });
+    } catch (error) {
+      console.error("Failed to delete notification:", error);
     }
   };
 

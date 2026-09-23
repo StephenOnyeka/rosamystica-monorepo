@@ -8,6 +8,8 @@ import DOMPurify from "dompurify";
 import { formatDistanceToNow } from "date-fns";
 import type { Notification } from "@/lib/types";
 
+import { customFetch } from "@/lib/api";
+
 export default function NotificationPost({ id }: { id: string }) {
   const [notification, setNotification] = useState<Notification | null>(null);
   const [loading, setLoading] = useState(true);
@@ -16,13 +18,9 @@ export default function NotificationPost({ id }: { id: string }) {
   useEffect(() => {
     const fetchNotification = async () => {
       try {
-        const response = await fetch(
-          `https://rmhsa-servered.vercel.app/api/notifications/${id}`,
+        const data = await customFetch<Notification>(
+          `/api/notifications/${id}`
         );
-        if (!response.ok) {
-          throw new Error("notification not found");
-        }
-        const data = (await response.json()) as Notification;
         setNotification(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));

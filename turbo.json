@@ -43,7 +43,8 @@
         "JWT_SECRET",
         "RESEND_API_KEY",
         "GMAIL_USER",
-        "GMAIL_PASS"
+        "GMAIL_PASS",
+        "NEXT_PUBLIC_API_URL"
       ]
     }
   }

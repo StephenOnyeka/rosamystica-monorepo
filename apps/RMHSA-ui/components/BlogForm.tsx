@@ -7,6 +7,8 @@ import "react-quill-new/dist/quill.bubble.css";
 import { useBlogsContext } from "@/hooks/useBlogsContext";
 import type { Blog } from "@/lib/types";
 
+import { customFetch } from "@/lib/api";
+
 function BlogForm() {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
@@ -14,8 +16,6 @@ function BlogForm() {
   const [error, setError] = useState<string | null>(null);
   const [emptyFields, setEmptyFields] = useState<string[]>([]);
   const [preview, setPreview] = useState(false); // State for preview
-  // BlogForm is only rendered client-side (dynamic import with ssr: false),
-  // so the token can be read during the initial render.
   const [token] = useState<string | null>(() => localStorage.getItem("token"));
   const { dispatch } = useBlogsContext();
 
@@ -24,19 +24,12 @@ function BlogForm() {
   ) => {
     e.preventDefault();
     const blog = { title, desc, body };
-    const response = await fetch(
-      "https://rmhsa-servered.vercel.app/api/blogs",
-      {
+    try {
+      const json = await customFetch<Blog>("/api/blogs", {
         method: "POST",
         body: JSON.stringify(blog),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
-    const json = (await response.json()) as Blog & { error?: string };
-    if (response.ok) {
+        token: token ?? undefined,
+      });
       setTitle("");
       setDesc("");
       setBody("");
@@ -44,8 +37,8 @@ function BlogForm() {
       setEmptyFields([]);
       console.log("new blog added", json);
       dispatch({ type: "CREATE_BLOG", payload: json });
-    } else {
-      setError(json.error ?? null);
+    } catch (err: any) {
+      setError(err.message || "Failed to create blog");
     }
   };
 

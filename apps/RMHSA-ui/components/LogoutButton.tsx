@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 
+import { customFetch } from "@/lib/api";
+
 interface LogoutButtonProps {
   onLogout: () => void;
 }
@@ -11,24 +13,18 @@ const LogoutButton = ({ onLogout }: LogoutButtonProps) => {
 
   const handleLogout = async () => {
     try {
-      // Optionally, you can make a request to the logout endpoint
-      await fetch("https://rmhsa-servered.vercel.app/api/admin/logout", {
+      await customFetch("/api/admin/logout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
       });
 
-      // Clear the token from localStorage
       localStorage.removeItem("token");
-
-      // Call the onLogout callback to update the state
       onLogout();
-
-      // Redirect to the login page
       router.push("/admin");
     } catch (error) {
       console.error("Logout error:", error);
+      localStorage.removeItem("token");
+      onLogout();
+      router.push("/admin");
     }
   };
 

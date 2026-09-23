@@ -8,6 +8,8 @@ import DOMPurify from "dompurify";
 import { formatDistanceToNow } from "date-fns";
 import type { Blog } from "@/lib/types";
 
+import { customFetch } from "@/lib/api";
+
 export default function BlogPost({ id }: { id: string }) {
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
@@ -16,13 +18,7 @@ export default function BlogPost({ id }: { id: string }) {
   useEffect(() => {
     const fetchBlog = async () => {
       try {
-        const response = await fetch(
-          `https://rmhsa-servered.vercel.app/api/blogs/${id}`,
-        );
-        if (!response.ok) {
-          throw new Error("blog not found");
-        }
-        const data = (await response.json()) as Blog;
+        const data = await customFetch<Blog>(`/api/blogs/${id}`);
         setBlog(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));

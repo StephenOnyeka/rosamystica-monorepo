@@ -10,26 +10,21 @@ interface BlogsDetailsProps {
   blog: Blog;
 }
 
+import { customFetch } from "@/lib/api";
+
 function BlogsDetails({ blog }: BlogsDetailsProps) {
   const { dispatch } = useBlogsContext();
   const { isAdmin } = useAdminContext();
 
   const handleClick = async () => {
-    const response = await fetch(
-      "https://rmhsa-servered.vercel.app/api/blogs/" + blog._id,
-      {
-        // const response = await fetch(
-        //   "https://rmhsa-servered.vercel.app/blogs/" + blog._id,
-        //   {
+    try {
+      const blogId = blog._id || (blog as any).id;
+      const json = await customFetch<Blog>(`/api/blogs/${blogId}`, {
         method: "DELETE",
-      },
-    );
-    // const response = await fetch(`http://localhost:5000/api/blogs/${id}`, {
-    //   method: "DELETE",
-    // });
-    const json = (await response.json()) as Blog;
-    if (response.ok) {
+      });
       dispatch({ type: "DELETE_BLOG", payload: json });
+    } catch (error) {
+      console.error("Failed to delete blog:", error);
     }
   };
 

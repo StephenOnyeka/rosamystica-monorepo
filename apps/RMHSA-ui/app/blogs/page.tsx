@@ -12,6 +12,7 @@ import Loading from "@/components/loading";
 import { useBlogsContext } from "@/hooks/useBlogsContext";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Blog } from "@/lib/types";
+import { customFetch } from "@/lib/api";
 
 // Dynamically import BlogForm with no SSR
 const BlogForm = dynamic(() => import("@/components/BlogForm"), {
@@ -37,17 +38,15 @@ function BlogsContent() {
 
   useEffect(() => {
     const fetchBlogs = async () => {
-      const response = await fetch(
-        `https://rmhsa-servered.vercel.app/api/blogs?page=${currentPage}&limit=${postsPerPage}`,
-      );
-      const data = (await response.json()) as BlogsApiResponse;
-
-      if (response.ok) {
+      try {
+        const data = await customFetch<BlogsApiResponse>(
+          `/api/blogs?page=${currentPage}&limit=${postsPerPage}`
+        );
         setTotalPages(data.totalPages);
-        dispatch({ type: "SET_BLOGS", payload: data.blogs }); // Make sure you're dispatching the blogs
-        setLoading(false);
-      } else {
-        console.error("Failed to fetch blogs:", data);
+        dispatch({ type: "SET_BLOGS", payload: data.blogs });
+      } catch (error) {
+        console.error("Failed to fetch blogs:", error);
+      } finally {
         setLoading(false);
       }
     };

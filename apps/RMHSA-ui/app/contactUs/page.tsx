@@ -16,6 +16,8 @@ import {
   FaTiktok,
 } from "react-icons/fa";
 
+import { customFetch } from "@/lib/api";
+
 interface ContactResponse {
   message: string;
   success: boolean;
@@ -32,18 +34,17 @@ export default function ContactUs() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent the default form submission
 
-    // Send the form data to the Node.js backend
-    const res = await fetch("https://rmhsa-servered.vercel.app/submitContact", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, email, subject, message }),
-    });
-
-    const data = (await res.json()) as ContactResponse;
-    setResponse(data.message); // Update the response state with the message from the server
-    setIsSuccess(data.success); // Update the response state with the message from the server
+    try {
+      const data = await customFetch<ContactResponse>("/submitContact", {
+        method: "POST",
+        body: JSON.stringify({ name, email, subject, message }),
+      });
+      setResponse(data.message);
+      setIsSuccess(data.success);
+    } catch (err: any) {
+      setResponse(err.message || "Error sending contact message");
+      setIsSuccess(false);
+    }
 
     // Clear the form inputs after submission
     setName("");
@@ -53,8 +54,8 @@ export default function ContactUs() {
 
     // Clear the response after 10 seconds
     setTimeout(() => {
-      setResponse(""); // Clear the response state
-    }, 10000); // 10000 milliseconds = 10 seconds
+      setResponse("");
+    }, 10000);
   };
 
   const handleEmailClick = () => {

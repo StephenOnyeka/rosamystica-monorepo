@@ -8,9 +8,9 @@ import Link from "next/link";
 import LogoutButton from "@/components/LogoutButton";
 import { useAdminContext } from "@/hooks/useAdminContext";
 
+import { customFetch } from "@/lib/api";
+
 export default function Admin() {
-  // AdminProvider (app-wide) verifies the stored token on mount and exposes
-  // the resulting isAdmin state through the context.
   const { isAdmin, verifyAdmin, signOut } = useAdminContext();
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -19,40 +19,30 @@ export default function Admin() {
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const response = await fetch(
-      "https://rmhsa-servered.vercel.app/api/admin/login",
-      {
+    try {
+      const data = await customFetch<{ token: string }>("/api/admin/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-      },
-    );
-
-    if (response.ok) {
-      const data = (await response.json()) as { token: string };
+      });
       localStorage.setItem("token", data.token);
       await verifyAdmin(data.token);
       router.push("/");
-    } else {
-      setError("Login failed");
+    } catch (err: any) {
+      setError(err.message || "Login failed");
     }
   };
 
   const handleLogout = async () => {
     try {
-      // Optionally, you can make a request to the logout endpoint
-      await fetch("https://rmhsa-servered.vercel.app/api/admin/logout", {
+      await customFetch("/api/admin/logout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
       });
-
-      // Clear the token from localStorage
       localStorage.removeItem("token");
       signOut();
     } catch (error) {
       console.error("Logout error:", error);
+      localStorage.removeItem("token");
+      signOut();
     }
   };
   return (

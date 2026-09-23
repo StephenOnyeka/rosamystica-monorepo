@@ -8,9 +8,10 @@ import "react-quill-new/dist/quill.bubble.css";
 import { useNotificationsContext } from "@/hooks/useNotificationsContext";
 import type { Notification } from "@/lib/types";
 
+import { customFetch } from "@/lib/api";
+
 function NotificationForm() {
   const { dispatch } = useNotificationsContext();
-  // const [titleImg, setTitleImg] = useState(null);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [body, setBody] = useState("");
@@ -22,24 +23,12 @@ function NotificationForm() {
     e: SyntheticEvent<HTMLFormElement | HTMLButtonElement>,
   ) => {
     e.preventDefault();
-    // const Notification = { titleImg, title, desc, body };
     const notification = { title, desc, body };
-    const response = await fetch(
-      "https://rmhsa-servered.vercel.app/api/notifications",
-      {
-        // const response = await fetch(
-        //   "https://rmhsa-servered.vercel.app/api/notifications",
-        //   {
+    try {
+      const json = await customFetch<Notification>("/api/notifications", {
         method: "POST",
         body: JSON.stringify(notification),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    );
-    const json = (await response.json()) as Notification & { error?: string };
-    if (response.ok) {
-      // setTitleImg(null);
+      });
       setTitle("");
       setDesc("");
       setBody("");
@@ -47,8 +36,8 @@ function NotificationForm() {
       setEmptyFields([]);
       console.log("new notification added", json);
       dispatch({ type: "CREATE_NOTIFICATION", payload: json });
-    } else {
-      setError(json.error ?? null);
+    } catch (err: any) {
+      setError(err.message || "Failed to create notification");
     }
   };
 

@@ -11,14 +11,11 @@ interface BlogPageProps {
   params: Promise<{ id: string }>;
 }
 
+import { customFetch } from "@/lib/api";
+
 async function getBlog(id: string): Promise<Blog | null> {
   try {
-    const response = await fetch(
-      `https://rmhsa-servered.vercel.app/api/blogs/${id}`,
-      { cache: "no-store" },
-    );
-    if (!response.ok) return null;
-    return (await response.json()) as Blog;
+    return await customFetch<Blog>(`/api/blogs/${id}`, { skipCache: true });
   } catch {
     return null;
   }
