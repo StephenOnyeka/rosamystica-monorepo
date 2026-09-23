@@ -30,7 +30,7 @@ export function useFetch<T = any>(
   endpoint: string | null,
   options: UseFetchOptions = {}
 ): UseFetchResult<T> {
-  const { enabled = true, ttl, skipCache, ...fetchOptions } = options;
+  const { enabled = true, skipCache } = options;
 
   const [data, setData] = useState<T | null>(() => {
     if (!endpoint || !enabled) return null;
@@ -48,8 +48,28 @@ export function useFetch<T = any>(
   const [isRevalidating, setIsRevalidating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [prevEndpoint, setPrevEndpoint] = useState<string | null>(endpoint);
+  const [prevSkipCache, setPrevSkipCache] = useState<boolean | undefined>(skipCache);
+
+  if (endpoint !== prevEndpoint || skipCache !== prevSkipCache) {
+    setPrevEndpoint(endpoint);
+    setPrevSkipCache(skipCache);
+
+    if (!endpoint || !enabled) {
+      setData(null);
+      setLoading(false);
+    } else {
+      const fullUrl = buildFullUrl(endpoint);
+      const cached = skipCache ? null : getCache<T>(fullUrl);
+      setData(cached);
+      setLoading(cached === null);
+    }
+  }
+
   const optionsRef = useRef(options);
-  optionsRef.current = options;
+  useEffect(() => {
+    optionsRef.current = options;
+  });
 
   const fetchData = useCallback(
     async (overrideOptions?: CustomFetchOptions): Promise<T | null> => {
@@ -87,23 +107,13 @@ export function useFetch<T = any>(
 
   useEffect(() => {
     if (!enabled || !endpoint) {
-      setLoading(false);
       return;
     }
 
     let active = true;
+    const currentOptions = optionsRef.current;
 
-    const fullUrl = buildFullUrl(endpoint);
-    const cached = options.skipCache ? null : getCache<T>(fullUrl);
-
-    if (cached !== null) {
-      setData(cached);
-      setLoading(false);
-    } else {
-      setLoading(true);
-    }
-
-    customFetch<T>(endpoint, options)
+    customFetch<T>(endpoint, currentOptions)
       .then((result) => {
         if (active) {
           setData(result);

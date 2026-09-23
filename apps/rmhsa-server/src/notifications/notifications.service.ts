@@ -62,7 +62,7 @@ export class NotificationsService {
   // Ported from notificationController.js: getNotification (single item).
   async getNotification(id: string): Promise<Notification> {
     const notification = await this.notificationRepository.findOne({
-      where: { id } as any,
+      where: { id },
     });
 
     if (!notification) {
@@ -109,7 +109,7 @@ export class NotificationsService {
   // Ported from notificationController.js: deleteNotification.
   async deleteNotification(id: string): Promise<Notification> {
     const notification = await this.notificationRepository.findOne({
-      where: { id } as any,
+      where: { id },
     });
 
     if (!notification) {
@@ -127,7 +127,7 @@ export class NotificationsService {
     updateNotificationDto: UpdateNotificationDto,
   ): Promise<Notification> {
     const notification = await this.notificationRepository.findOne({
-      where: { id } as any,
+      where: { id },
     });
 
     if (!notification) {

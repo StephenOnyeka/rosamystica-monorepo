@@ -27,7 +27,8 @@ export class MailService {
     this.resend = new Resend(resendApiKey);
 
     const gmailUser =
-      this.configService.get<string>('GMAIL_USER') ?? 'rosamysticahsa@gmail.com';
+      this.configService.get<string>('GMAIL_USER') ??
+      'rosamysticahsa@gmail.com';
     const gmailPass = this.configService.get<string>('GMAIL_PASS');
 
     this.gmailTransporter = createTransport({
@@ -122,8 +123,6 @@ export class MailService {
       );
     }
 
-    this.logger.log(
-      `Contact email sent successfully via Resend: ${data?.id}`,
-    );
+    this.logger.log(`Contact email sent successfully via Resend: ${data?.id}`);
   }
 }

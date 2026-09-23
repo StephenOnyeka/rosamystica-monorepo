@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -55,7 +54,7 @@ export class BlogsService {
 
   // Ported from blogController.js: getBlog (single blog).
   async getBlog(id: string): Promise<Blog> {
-    const blog = await this.blogRepository.findOne({ where: { id } as any });
+    const blog = await this.blogRepository.findOne({ where: { id } });
 
     if (!blog) {
       throw new NotFoundException({ error: 'No such blog' });
@@ -95,7 +94,7 @@ export class BlogsService {
 
   // Ported from blogController.js: deleteBlog.
   async deleteBlog(id: string): Promise<Blog> {
-    const blog = await this.blogRepository.findOne({ where: { id } as any });
+    const blog = await this.blogRepository.findOne({ where: { id } });
 
     if (!blog) {
       throw new NotFoundException({ error: 'No such blog' });
@@ -109,7 +108,7 @@ export class BlogsService {
   // Ported from blogController.js: updateBlog. findOneAndUpdate runs without
   // { new: true }, so the pre-update document is returned (legacy behavior).
   async updateBlog(id: string, updateBlogDto: UpdateBlogDto): Promise<Blog> {
-    const blog = await this.blogRepository.findOne({ where: { id } as any });
+    const blog = await this.blogRepository.findOne({ where: { id } });
 
     if (!blog) {
       throw new NotFoundException({ error: 'No such blog' });
