@@ -1,8 +1,9 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { AddCircle } from "iconsax-react";
 
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
@@ -13,11 +14,6 @@ import { useBlogsContext } from "@/hooks/useBlogsContext";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Blog } from "@/lib/types";
 import { customFetch } from "@/lib/api";
-
-// Dynamically import BlogForm with no SSR
-const BlogForm = dynamic(() => import("@/components/BlogForm"), {
-  ssr: false,
-});
 
 interface BlogsApiResponse {
   blogs: Blog[];
@@ -65,41 +61,55 @@ function BlogsContent() {
         <Navbar />
         <br />
         <br />
-        {/* displaying in block form */}
-        <div className="flex w-full gap-x-8 max-lg:flex-wrap">
-          <div className="font-semibold w-full">
-            {blogs &&
-              blogs.map((blog) => <BlogsDetails key={blog._id} blog={blog} />)}
 
-            {/* Pagination Controls */}
-            <br />
-            <br />
-            <div className="w-full flex justify-between mb-8">
-              <button
-                disabled={currentPage <= 1}
-                onClick={() => router.push(`/blogs?page=${currentPage - 1}`)}
-                className="bg-contingent text-sm text-white px-4 py-2 rounded disabled:bg-contingent/20"
-              >
-                Previous
-              </button>
-              <span>
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                disabled={currentPage >= totalPages}
-                onClick={() => router.push(`/blogs?page=${currentPage + 1}`)}
-                className="bg-contingent text-sm text-white px-4 py-2 rounded disabled:bg-contingent/20"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-
+        {/* Page title + Create Blog button */}
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-contingent font-playfair">
+            Blog Posts
+          </h1>
           {isAdmin && (
-            <div className="w-full">
-              <BlogForm />
-            </div>
+            <Link
+              href="/blogs/new"
+              className="inline-flex items-center gap-x-2 bg-contingent text-white text-sm font-medium px-4 py-2.5 rounded-sm hover:bg-contingent-2 transition-colors duration-200 group"
+            >
+              <AddCircle
+                size={18}
+                color="#ffffff"
+                variant="Bold"
+                className="group-hover:rotate-90 transition-transform duration-200"
+              />
+              Create Blog
+            </Link>
           )}
+        </div>
+
+        {/* Blog list */}
+        <div className="font-semibold w-full">
+          {blogs &&
+            blogs.map((blog) => <BlogsDetails key={blog._id} blog={blog} />)}
+
+          {/* Pagination Controls */}
+          <br />
+          <br />
+          <div className="w-full flex justify-between mb-8">
+            <button
+              disabled={currentPage <= 1}
+              onClick={() => router.push(`/blogs?page=${currentPage - 1}`)}
+              className="bg-contingent text-sm text-white px-4 py-2 rounded disabled:bg-contingent/20"
+            >
+              Previous
+            </button>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              disabled={currentPage >= totalPages}
+              onClick={() => router.push(`/blogs?page=${currentPage + 1}`)}
+              className="bg-contingent text-sm text-white px-4 py-2 rounded disabled:bg-contingent/20"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
     </div>

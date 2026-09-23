@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type SyntheticEvent } from "react";
+import { useRouter } from "next/navigation";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import "react-quill-new/dist/quill.bubble.css";
@@ -9,7 +10,12 @@ import type { Blog } from "@/lib/types";
 
 import { customFetch } from "@/lib/api";
 
-function BlogForm() {
+interface BlogFormProps {
+  /** If provided, router.push(redirectAfterSubmit) is called on success */
+  redirectAfterSubmit?: string;
+}
+
+function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [body, setBody] = useState("");
@@ -18,6 +24,7 @@ function BlogForm() {
   const [preview, setPreview] = useState(false); // State for preview
   const [token] = useState<string | null>(() => localStorage.getItem("token"));
   const { dispatch } = useBlogsContext();
+  const router = useRouter();
 
   const handleSubmit = async (
     e: SyntheticEvent<HTMLFormElement | HTMLButtonElement>,
@@ -37,6 +44,9 @@ function BlogForm() {
       setEmptyFields([]);
       console.log("new blog added", json);
       dispatch({ type: "CREATE_BLOG", payload: json });
+      if (redirectAfterSubmit) {
+        router.push(redirectAfterSubmit);
+      }
     } catch (err: any) {
       setError(err.message || "Failed to create blog");
     }
@@ -77,7 +87,7 @@ function BlogForm() {
           ) : (
             <form
               onSubmit={handleSubmit}
-              className="max-sm:hidden w-full full pt-8"
+              className="w-full full pt-8"
             >
               <h3 className="text-2xl font-semibold mb-8">Add a New Blog</h3>
               <div className="w-full content-center">
@@ -148,3 +158,4 @@ function BlogForm() {
 }
 
 export default BlogForm;
+
