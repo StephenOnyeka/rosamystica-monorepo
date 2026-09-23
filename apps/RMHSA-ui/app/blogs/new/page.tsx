@@ -47,7 +47,7 @@ export default function NewBlogPage() {
         </div>
 
         {isAdmin ? (
-          <div className="max-w-3xl">
+          <div className="">
             <BlogForm redirectAfterSubmit="/blogs" />
           </div>
         ) : (

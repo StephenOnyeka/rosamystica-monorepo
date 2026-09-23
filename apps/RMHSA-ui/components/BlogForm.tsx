@@ -7,8 +7,13 @@ import "react-quill-new/dist/quill.snow.css";
 import "react-quill-new/dist/quill.bubble.css";
 import { useBlogsContext } from "@/hooks/useBlogsContext";
 import type { Blog } from "@/lib/types";
+import { Geist } from "next/font/google";
 
 import { customFetch } from "@/lib/api";
+
+const geist = Geist({
+  subsets: ["latin"],
+});
 
 interface BlogFormProps {
   /** If provided, router.push(redirectAfterSubmit) is called on success */
@@ -57,9 +62,9 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
   };
 
   return (
-    <div>
+    <div className={geist.className}>
       {token && (
-        <div>
+        <div className="">
           {preview ? (
             <div className="preview-container">
               <h3 className="text-2xl font-semibold mb-4">Preview</h3>
@@ -85,43 +90,43 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="w-full full pt-8">
-              {/* <div className="max-w-4xl mx-auto"> */}
-              <h3 className="text-2xl font-semibold mb-8">Add a New Blog</h3>
+            <form onSubmit={handleSubmit} className={`w-full full pt-8 border ${geist.className}`}>
+              <div className="max-w-5xl mx-auto">
+              {/* <h3 className="text-2xl font-semibold mb-8">Add a New Blog</h3> */}
               <div className="w-full content-center">
                 <div>
-                  <label>Blog Title:</label>
-                  <br />
+                  {/* <label>Blog Title:</label> */}
+                  {/* <br /> */}
                   <input
-                    className={`bg-gray-200 p-2 mb-4 mt-2 w-full ${
+                    className={`bg-gray-200 p-2 mb-4 mt-2 w-full text-xl placeholder:text-xl ${
                       emptyFields.includes("title") ? "error" : ""
                     }`}
                     type="text"
                     onChange={(e) => setTitle(e.target.value)}
                     value={title}
+                    placeholder="Blog Title"
                   />
                 </div>
                 <div>
-                  <label>Desc:</label>
-                  <br />
-                  <input
-                    className={`bg-gray-200 p-2 mb-4 mt-2 w-full ${
+                  {/* <input
+                    className={`bg-gray-200 p-2 mb-4 mt-2 w-full placeholder:text-xl ${
                       emptyFields.includes("desc") ? "error" : ""
                     }`}
                     type="text"
                     onChange={(e) => setDesc(e.target.value)}
                     value={desc}
-                  />
+                    placeholder="Description"
+                  /> */}
                 </div>
                 <div>
-                  <label>Body:</label>
-                  <br />
+                  {/* <label>Body:</label> */}
+                  {/* <br /> */}
                   <ReactQuill
                     theme="bubble"
                     onChange={setBody}
                     value={body}
                     placeholder="What's on your mind..."
-                    className={`p-2 mb-4 mt-2 h-[700px] max-w-2xl bg-gray-200 rounded-xl ${
+                    className={`p-2 mb-4 mt-2 h-[70vh] max-w-full bg-gray-200 rounded-xl ${
                       emptyFields.includes("body") ? "error" : ""
                     }`}
                     modules={{
@@ -142,7 +147,7 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
               >
                 Preview
               </button>
-              {/* </div> */}
+              </div>
             </form>
           )}
           {error && (
