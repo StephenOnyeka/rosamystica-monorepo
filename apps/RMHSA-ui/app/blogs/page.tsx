@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { AddCircle } from "iconsax";
+import { AddCircle } from "iconsax-reactjs";
 
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";

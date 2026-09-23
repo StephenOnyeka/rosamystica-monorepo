@@ -190,3 +190,66 @@
     gap: 14rem;
   }
 }
+
+/* ------------------------------------------------------------------
+   Tiptap Editor Styles
+------------------------------------------------------------------- */
+
+/* Placeholder text — required for @tiptap/extension-placeholder to appear */
+.tiptap p.is-editor-empty:first-child::before,
+.tiptap p.is-empty::before {
+  color: #9ca3af;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Basic prose styling for Tiptap content */
+.tiptap {
+  outline: none;
+}
+
+.tiptap h1 { font-size: 1.875rem; font-weight: 700; margin: 0.75rem 0; }
+.tiptap h2 { font-size: 1.5rem; font-weight: 700; margin: 0.65rem 0; }
+.tiptap h3 { font-size: 1.25rem; font-weight: 600; margin: 0.5rem 0; }
+
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+.tiptap ul { list-style-type: disc; }
+.tiptap ol { list-style-type: decimal; }
+
+.tiptap blockquote {
+  border-left: 3px solid #d1d5db;
+  padding-left: 1rem;
+  color: #6b7280;
+  margin: 0.75rem 0;
+  font-style: italic;
+}
+
+.tiptap code {
+  background: #f3f4f6;
+  border-radius: 0.25rem;
+  padding: 0.1em 0.3em;
+  font-family: monospace;
+  font-size: 0.875em;
+}
+
+.tiptap pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+}
+
+.tiptap pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: 0.875rem;
+}
