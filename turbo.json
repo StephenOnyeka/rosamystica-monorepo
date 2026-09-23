@@ -37,7 +37,14 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "passThroughEnv": ["PORT", "MONGO_URI", "JWT_SECRET", "BREVO_API"]
+      "passThroughEnv": [
+        "PORT",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "RESEND_API_KEY",
+        "GMAIL_USER",
+        "GMAIL_PASS"
+      ]
     }
   }
 }
