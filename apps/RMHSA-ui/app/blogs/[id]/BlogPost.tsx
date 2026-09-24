@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -8,6 +8,7 @@ import DOMPurify from "dompurify";
 import { formatDistanceToNow } from "date-fns";
 import type { Blog } from "@/lib/types";
 import { customFetch } from "@/lib/api";
+import { ThrottledButton } from "@/components/ThrottledButton";
 import {
   LuUser,
   LuCalendar,
@@ -61,15 +62,23 @@ export default function BlogPost({ id }: { id: string }) {
       !window.confirm("Are you sure you want to delete this blog post?")
     )
       return;
+
     const blogId = blog.id || blog._id || id;
+    const targetBlog = blog;
+
+    // 1. Optimistic UI update — immediately delete from context & navigate
+    dispatch({ type: "DELETE_BLOG", payload: targetBlog });
+    router.push("/blogs");
+
     try {
-      const json = await customFetch<Blog>(`/api/blogs/${blogId}`, {
+      // 2. Perform background server delete
+      await customFetch<Blog>(`/api/blogs/${blogId}`, {
         method: "DELETE",
       });
-      dispatch({ type: "DELETE_BLOG", payload: json });
-      router.push("/blogs");
     } catch (err) {
       console.error("Failed to delete blog:", err);
+      // 3. Rollback state if server deletion fails
+      dispatch({ type: "CREATE_BLOG", payload: targetBlog });
     }
   };
 
@@ -122,14 +131,15 @@ export default function BlogPost({ id }: { id: string }) {
             </div>
 
             {isAdmin && blog && (
-              <button
+              <ThrottledButton
                 type="button"
                 onClick={handleDelete}
-                className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg shadow-sm transition-all cursor-pointer"
+                loadingText="Deleting..."
+                className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg shadow-sm"
               >
                 <LuTrash2 className="w-4 h-4" />
                 Delete Article
-              </button>
+              </ThrottledButton>
             )}
           </div>
 
@@ -229,14 +239,15 @@ export default function BlogPost({ id }: { id: string }) {
                   Back to All Articles
                 </Link>
                 {isAdmin && (
-                  <button
+                  <ThrottledButton
                     type="button"
                     onClick={handleDelete}
-                    className="flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700 transition-colors cursor-pointer"
+                    loadingText="Deleting..."
+                    className="flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700"
                   >
                     <LuTrash2 className="w-4 h-4" />
                     Delete Post
-                  </button>
+                  </ThrottledButton>
                 )}
               </div>
             </article>

@@ -33,18 +33,22 @@ export const blogsReducer = (
       return { blogs: action.payload };
     case "CREATE_BLOG":
       return { blogs: [action.payload, ...(state.blogs ?? [])] };
-    case "DELETE_BLOG":
+    case "DELETE_BLOG": {
+      const targetId = action.payload._id || action.payload.id;
       return {
         blogs: (state.blogs ?? []).filter(
-          (w) => w._id !== action.payload._id,
+          (w) => (w._id || w.id) !== targetId,
         ),
       };
-    case "UPDATE_BLOG":
+    }
+    case "UPDATE_BLOG": {
+      const targetId = action.payload._id || action.payload.id;
       return {
         blogs: (state.blogs ?? []).map((blog) =>
-          blog._id === action.payload._id ? action.payload : blog,
+          (blog._id || blog.id) === targetId ? action.payload : blog,
         ),
       };
+    }
     default:
       return state;
   }

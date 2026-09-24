@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, type SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -7,6 +7,7 @@ import type { Blog } from "@/lib/types";
 import { Geist } from "next/font/google";
 import { customFetch } from "@/lib/api";
 import { SimpleEditor } from "./tiptap-templates/simple/simple-editor";
+import { ThrottledButton } from "@/components/ThrottledButton";
 import {
   LuImagePlus,
   LuImage,
@@ -60,10 +61,16 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
   };
 
   const handleSubmit = async (
-    e: SyntheticEvent<HTMLFormElement | HTMLButtonElement>,
+    e?: SyntheticEvent<HTMLFormElement | HTMLButtonElement>,
   ) => {
-    e.preventDefault();
-    const blog = {
+    if (e) e.preventDefault();
+    if (!title.trim()) {
+      setError("Please enter a title for your blog post.");
+      return;
+    }
+
+    const tempId = `temp-${Date.now()}`;
+    const blogPayload = {
       title,
       desc: title,
       body,
@@ -72,24 +79,43 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
       backgroundImage: coverImage,
     };
 
+    const optimisticBlog: Blog = {
+      id: tempId,
+      _id: tempId,
+      ...blogPayload,
+      createdAt: new Date().toISOString(),
+    };
+
+    // 1. Optimistic UI update — add immediately to context state
+    dispatch({ type: "CREATE_BLOG", payload: optimisticBlog });
+
+    // Reset inputs
+    setTitle("");
+    setBody("");
+    setCoverImage(null);
+    setError(null);
+
+    // 2. Navigate immediately if redirect prop provided
+    if (redirectAfterSubmit) {
+      router.push(redirectAfterSubmit);
+    }
+
     try {
+      // 3. Fire API request to backend
       const json = await customFetch<Blog>("/api/blogs", {
         method: "POST",
-        body: JSON.stringify(blog),
+        body: JSON.stringify(blogPayload),
         token: token ?? undefined,
       });
-      setTitle("");
-      setBody("");
-      setCoverImage(null);
-      setError(null);
-      console.log("new blog added", json);
+
+      // 4. Update context with server response
+      dispatch({ type: "DELETE_BLOG", payload: optimisticBlog });
       dispatch({ type: "CREATE_BLOG", payload: json });
-      if (redirectAfterSubmit) {
-        router.push(redirectAfterSubmit);
-      }
     } catch (err: unknown) {
+      // 5. Rollback state if server request fails
+      dispatch({ type: "DELETE_BLOG", payload: optimisticBlog });
       setError(
-        err instanceof Error ? err.message : "Failed to create blog",
+        err instanceof Error ? err.message : "Failed to create blog post",
       );
     }
   };
@@ -123,14 +149,15 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
                     <LuPencil className="w-4 h-4" />
                     Back to Edit
                   </button>
-                  <button
+                  <ThrottledButton
                     type="button"
                     onClick={handleSubmit}
-                    className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-sm transition-all cursor-pointer"
+                    loadingText="Publishing..."
+                    className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-sm"
                   >
                     <LuSend className="w-4 h-4" />
                     Publish Post
-                  </button>
+                  </ThrottledButton>
                 </div>
               </div>
 
@@ -200,14 +227,15 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
                     <LuArrowLeft className="w-4 h-4" />
                     Continue Editing
                   </button>
-                  <button
+                  <ThrottledButton
                     type="button"
                     onClick={handleSubmit}
-                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md transition-all cursor-pointer"
+                    loadingText="Publishing..."
+                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md"
                   >
                     <LuSend className="w-4 h-4" />
                     Publish Blog Post
-                  </button>
+                  </ThrottledButton>
                 </div>
               </article>
             </div>
@@ -310,14 +338,14 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-4 mb-8">
-                  <button
-                    type="button"
-                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md transition-all cursor-pointer"
-                    onClick={handleSubmit}
+                  <ThrottledButton
+                    type="submit"
+                    loadingText="Publishing..."
+                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md"
                   >
                     <LuSend className="w-4 h-4" />
                     Publish Blog Post
-                  </button>
+                  </ThrottledButton>
                   <button
                     type="button"
                     className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all cursor-pointer"
