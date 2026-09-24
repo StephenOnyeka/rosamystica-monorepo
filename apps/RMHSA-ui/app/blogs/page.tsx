@@ -63,7 +63,7 @@ function BlogsContent() {
         <br />
 
         {/* Page title + Create Blog button */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 max-w-6xl mx-auto">
           <h1 className="text-2xl font-bold text-contingent font-playfair">
             Blog Posts
           </h1>
@@ -84,7 +84,7 @@ function BlogsContent() {
         </div>
 
         {/* Blog list */}
-        <div className="font-semibold w-full">
+        <div className="font-semibold w-full max-w-6xl mx-auto">
           {blogs &&
             blogs.map((blog, index) => (
               <BlogsDetails key={blog.id || blog._id || index} blog={blog} />
