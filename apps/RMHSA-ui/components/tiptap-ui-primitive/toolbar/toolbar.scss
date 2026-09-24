@@ -97,9 +97,13 @@
   }
 }
 
-/* or a fixed thumbnail size */
+/* Centered tiptap image styles */
 .tiptap img {
-  width: 300px;
-  max-width: 100%;
+  max-width: 400px;
+  width: 100%;
   height: auto;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  border-radius: 0.5rem;
 }

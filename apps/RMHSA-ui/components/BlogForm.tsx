@@ -179,7 +179,7 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
 
                   {/* Body HTML Content */}
                   <div
-                    className="prose prose-lg max-w-none text-gray-800 leading-relaxed"
+                    className="prose prose-lg max-w-none text-gray-800 leading-relaxed [&_img]:max-w-[400px] [&_img]:w-auto [&_img]:h-auto [&_img]:mx-auto [&_img]:block [&_img]:rounded-lg [&_img]:my-6"
                     dangerouslySetInnerHTML={{
                       __html:
                         body ||

@@ -65,7 +65,7 @@ export default function BlogPost({ id }: { id: string }) {
         )}
         <h1 className="font-bold text-center text-3xl md:text-4xl text-gray-900 mb-6 font-playfair">{blog.title}</h1>
         <div
-          className="prose prose-lg max-w-none text-gray-800 leading-relaxed font-poppins"
+          className="prose prose-lg max-w-none text-gray-800 leading-relaxed font-poppins [&_img]:max-w-[400px] [&_img]:w-auto [&_img]:h-auto [&_img]:mx-auto [&_img]:block [&_img]:rounded-lg [&_img]:my-6"
           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.body) }}
         />
         <br />
