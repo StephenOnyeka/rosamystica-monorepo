@@ -7,6 +7,8 @@ export interface Blog {
   desc: string;
   body: string;
   image?: string | null;
+  coverImage?: string | null;
+  backgroundImage?: string | null;
   createdAt: string;
   updatedAt?: string;
   [key: string]: unknown;

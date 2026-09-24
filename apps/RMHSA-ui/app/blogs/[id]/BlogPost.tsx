@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -84,7 +84,10 @@ export default function BlogPost({ id }: { id: string }) {
 
   // Resolve cover image from any field the backend may return
   const coverImg =
-    blog?.image || (blog as any)?.coverImage || (blog as any)?.titleImg;
+    blog?.backgroundImage ||
+    blog?.coverImage ||
+    blog?.image ||
+    (blog as any)?.titleImg;
 
   return (
     <div>

@@ -69,6 +69,7 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
       body,
       image: coverImage,
       coverImage: coverImage,
+      backgroundImage: coverImage,
     };
 
     try {

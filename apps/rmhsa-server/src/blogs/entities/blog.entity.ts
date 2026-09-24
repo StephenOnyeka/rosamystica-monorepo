@@ -20,6 +20,15 @@ export class Blog {
   @Column({ type: 'jsonb', nullable: false })
   body: any;
 
+  @Column({ type: 'text', nullable: true })
+  image?: string;
+
+  @Column({ type: 'text', nullable: true })
+  coverImage?: string;
+
+  @Column({ type: 'text', nullable: true })
+  backgroundImage?: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

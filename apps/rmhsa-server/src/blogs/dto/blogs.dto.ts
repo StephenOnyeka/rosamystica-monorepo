@@ -13,6 +13,15 @@ export class CreateBlogDto {
   @ApiProperty({ description: 'Blog post body content', required: true })
   // Matches the Schema.Types.Mixed body in models/blogModel.js.
   body?: unknown;
+
+  @ApiProperty({ description: 'Primary image URL or base64', required: false })
+  image?: string;
+
+  @ApiProperty({ description: 'Cover image URL or base64', required: false })
+  coverImage?: string;
+
+  @ApiProperty({ description: 'Background image URL or base64', required: false })
+  backgroundImage?: string;
 }
 
 // PATCH spreads the raw request body over the stored document (any subset of
@@ -26,4 +35,13 @@ export class UpdateBlogDto {
 
   @ApiProperty({ description: 'Blog post body content', required: false })
   body?: unknown;
+
+  @ApiProperty({ description: 'Primary image URL or base64', required: false })
+  image?: string;
+
+  @ApiProperty({ description: 'Cover image URL or base64', required: false })
+  coverImage?: string;
+
+  @ApiProperty({ description: 'Background image URL or base64', required: false })
+  backgroundImage?: string;
 }

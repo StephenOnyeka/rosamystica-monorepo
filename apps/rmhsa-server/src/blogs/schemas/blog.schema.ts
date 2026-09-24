@@ -15,6 +15,15 @@ export class Blog {
 
   @Prop({ type: SchemaTypes.Mixed, required: true })
   body: any;
+
+  @Prop({ required: false })
+  image?: string;
+
+  @Prop({ required: false })
+  coverImage?: string;
+
+  @Prop({ required: false })
+  backgroundImage?: string;
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);

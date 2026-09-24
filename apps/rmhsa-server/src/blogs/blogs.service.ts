@@ -67,14 +67,19 @@ export class BlogsService {
   // whole flow (db write + subscriber emails) in a catch that answered 401,
   // so any failure here keeps that exact shape.
   async createBlog(createBlogDto: CreateBlogDto): Promise<Blog> {
-    const { title, desc } = createBlogDto;
+    const { title, desc, image, coverImage, backgroundImage } = createBlogDto;
+
+    const imgVal = backgroundImage || coverImage || image || undefined;
 
     try {
       // Add doc to db
       const blog = await this.blogRepository.save({
-        title,
+        title: title || "",
         desc,
         body: createBlogDto.body,
+        image: imgVal,
+        coverImage: imgVal,
+        backgroundImage: imgVal,
       });
 
       // Fetch subscribers' emails
