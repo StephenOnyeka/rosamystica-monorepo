@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, type SyntheticEvent } from "react";
+import { useState, useEffect, type SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useBlogsContext } from "@/hooks/useBlogsContext";
 import type { Blog } from "@/lib/types";
@@ -19,6 +19,7 @@ import {
   LuUser,
   LuEye,
   LuArrowLeft,
+  LuCheck,
 } from "react-icons/lu";
 
 const geist = Geist({
@@ -26,14 +27,40 @@ const geist = Geist({
 });
 
 interface BlogFormProps {
+  /** If editing an existing blog, pass initial data */
+  initialData?: Blog | null;
   /** If provided, router.push(redirectAfterSubmit) is called on success */
   redirectAfterSubmit?: string;
+  /** Custom button submit text */
+  submitLabel?: string;
 }
 
-function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [coverImage, setCoverImage] = useState<string | null>(null);
+function BlogForm({
+  initialData,
+  redirectAfterSubmit,
+  submitLabel,
+}: BlogFormProps = {}) {
+  const isEditing = Boolean(initialData && (initialData.id || initialData._id));
+  const [title, setTitle] = useState(initialData?.title ?? "");
+  const [body, setBody] = useState(initialData?.body ?? "");
+  const [coverImage, setCoverImage] = useState<string | null>(
+    (initialData?.backgroundImage ||
+      initialData?.coverImage ||
+      initialData?.image) as string | null
+  );
+
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title ?? "");
+      setBody(initialData.body ?? "");
+      setCoverImage(
+        (initialData.backgroundImage ||
+          initialData.coverImage ||
+          initialData.image) as string | null
+      );
+    }
+  }, [initialData]);
+
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
   const [token] = useState<string | null>(() => localStorage.getItem("token"));
@@ -69,7 +96,6 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
       return;
     }
 
-    const tempId = `temp-${Date.now()}`;
     const blogPayload = {
       title,
       desc: title,
@@ -79,48 +105,78 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
       backgroundImage: coverImage,
     };
 
-    const optimisticBlog: Blog = {
-      id: tempId,
-      _id: tempId,
-      ...blogPayload,
-      createdAt: new Date().toISOString(),
-    };
+    if (isEditing && initialData) {
+      const targetId = initialData.id || initialData._id || "";
+      const updatedOptimistic: Blog = {
+        ...initialData,
+        ...blogPayload,
+      };
 
-    // 1. Optimistic UI update — add immediately to context state
-    dispatch({ type: "CREATE_BLOG", payload: optimisticBlog });
+      // 1. Optimistic UI update for Edit
+      dispatch({ type: "UPDATE_BLOG", payload: updatedOptimistic });
+      setError(null);
 
-    // Reset inputs
-    setTitle("");
-    setBody("");
-    setCoverImage(null);
-    setError(null);
+      if (redirectAfterSubmit) {
+        router.push(redirectAfterSubmit);
+      }
 
-    // 2. Navigate immediately if redirect prop provided
-    if (redirectAfterSubmit) {
-      router.push(redirectAfterSubmit);
-    }
+      try {
+        const json = await customFetch<Blog>(`/api/blogs/${targetId}`, {
+          method: "PATCH",
+          body: JSON.stringify(blogPayload),
+          token: token ?? undefined,
+        });
+        dispatch({ type: "UPDATE_BLOG", payload: json });
+      } catch (err: unknown) {
+        // Rollback edit on error
+        dispatch({ type: "UPDATE_BLOG", payload: initialData });
+        setError(
+          err instanceof Error ? err.message : "Failed to update blog post"
+        );
+      }
+    } else {
+      // Creation flow
+      const tempId = `temp-${Date.now()}`;
+      const optimisticBlog: Blog = {
+        id: tempId,
+        _id: tempId,
+        ...blogPayload,
+        createdAt: new Date().toISOString(),
+      };
 
-    try {
-      // 3. Fire API request to backend
-      const json = await customFetch<Blog>("/api/blogs", {
-        method: "POST",
-        body: JSON.stringify(blogPayload),
-        token: token ?? undefined,
-      });
+      // 1. Optimistic UI add
+      dispatch({ type: "CREATE_BLOG", payload: optimisticBlog });
 
-      // 4. Update context with server response
-      dispatch({ type: "DELETE_BLOG", payload: optimisticBlog });
-      dispatch({ type: "CREATE_BLOG", payload: json });
-    } catch (err: unknown) {
-      // 5. Rollback state if server request fails
-      dispatch({ type: "DELETE_BLOG", payload: optimisticBlog });
-      setError(
-        err instanceof Error ? err.message : "Failed to create blog post",
-      );
+      setTitle("");
+      setBody("");
+      setCoverImage(null);
+      setError(null);
+
+      if (redirectAfterSubmit) {
+        router.push(redirectAfterSubmit);
+      }
+
+      try {
+        const json = await customFetch<Blog>("/api/blogs", {
+          method: "POST",
+          body: JSON.stringify(blogPayload),
+          token: token ?? undefined,
+        });
+        dispatch({ type: "DELETE_BLOG", payload: optimisticBlog });
+        dispatch({ type: "CREATE_BLOG", payload: json });
+      } catch (err: unknown) {
+        dispatch({ type: "DELETE_BLOG", payload: optimisticBlog });
+        setError(
+          err instanceof Error ? err.message : "Failed to create blog post"
+        );
+      }
     }
   };
 
   const handlePreviewToggle = () => setPreview((p) => !p);
+
+  const defaultSubmitText = isEditing ? "Save Changes" : "Publish Post";
+  const actionButtonText = submitLabel || defaultSubmitText;
 
   return (
     <div className={geist.className}>
@@ -152,11 +208,11 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
                   <ThrottledButton
                     type="button"
                     onClick={handleSubmit}
-                    loadingText="Publishing..."
+                    loadingText="Saving..."
                     className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-sm"
                   >
-                    <LuSend className="w-4 h-4" />
-                    Publish Post
+                    <LuCheck className="w-4 h-4" />
+                    {actionButtonText}
                   </ThrottledButton>
                 </div>
               </div>
@@ -230,11 +286,11 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
                   <ThrottledButton
                     type="button"
                     onClick={handleSubmit}
-                    loadingText="Publishing..."
+                    loadingText="Saving..."
                     className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md"
                   >
                     <LuSend className="w-4 h-4" />
-                    Publish Blog Post
+                    {actionButtonText}
                   </ThrottledButton>
                 </div>
               </article>
@@ -247,7 +303,10 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
             >
               <div className="max-w-5xl mx-auto">
                 {/* Form Header */}
-                <div className="flex items-center justify-end mb-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-contingent font-playfair">
+                    {isEditing ? "Edit Blog Post" : "Create New Blog Post"}
+                  </h2>
                   <button
                     type="button"
                     onClick={handlePreviewToggle}
@@ -340,11 +399,11 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
                 <div className="flex items-center gap-4 mb-8">
                   <ThrottledButton
                     type="submit"
-                    loadingText="Publishing..."
+                    loadingText="Saving..."
                     className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md"
                   >
                     <LuSend className="w-4 h-4" />
-                    Publish Blog Post
+                    {actionButtonText}
                   </ThrottledButton>
                   <button
                     type="button"

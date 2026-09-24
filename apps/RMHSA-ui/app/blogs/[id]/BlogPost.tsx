@@ -15,6 +15,9 @@ import {
   LuClock,
   LuArrowLeft,
   LuTrash2,
+  LuPencil,
+  LuShare2,
+  LuCheck,
 } from "react-icons/lu";
 import { ArrowLeft2 } from "iconsax-reactjs";
 import Topfile from "@/components/Topfile";
@@ -37,6 +40,7 @@ export default function BlogPost({ id }: { id: string }) {
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
   const { isAdmin } = useAdminContext();
   const { dispatch } = useBlogsContext();
   const router = useRouter();
@@ -82,6 +86,14 @@ export default function BlogPost({ id }: { id: string }) {
     }
   };
 
+  const handleShare = () => {
+    if (typeof window !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   const getReadingTime = (content: string) => {
     const text = content ? content.replace(/<[^>]*>/g, " ").trim() : "";
     const words = text ? text.split(/\s+/).length : 0;
@@ -90,6 +102,8 @@ export default function BlogPost({ id }: { id: string }) {
   };
 
   if (loading) return <Loading />;
+
+  const blogId = blog?.id || blog?._id || id;
 
   // Resolve cover image from any field the backend may return
   const coverImg =
@@ -111,7 +125,7 @@ export default function BlogPost({ id }: { id: string }) {
 
         <div className="max-w-5xl mx-auto font-poppins">
           {/* Header Navigation Bar */}
-          <div className="flex items-center justify-between gap-x-4 mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-x-4">
               <Link
                 href="/blogs"
@@ -130,17 +144,51 @@ export default function BlogPost({ id }: { id: string }) {
               </div>
             </div>
 
-            {isAdmin && blog && (
-              <ThrottledButton
+            {/* Action Bar (Share, Edit, Delete) */}
+            <div className="flex items-center gap-2">
+              <button
                 type="button"
-                onClick={handleDelete}
-                loadingText="Deleting..."
-                className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg shadow-sm"
+                onClick={handleShare}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 shadow-sm transition-all cursor-pointer"
+                title="Share Article Link"
               >
-                <LuTrash2 className="w-4 h-4" />
-                Delete Article
-              </ThrottledButton>
-            )}
+                {copied ? (
+                  <>
+                    <LuCheck className="w-4 h-4 text-green-600" />
+                    <span className="text-green-600">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <LuShare2 className="w-4 h-4 text-gray-600" />
+                    <span>Share</span>
+                  </>
+                )}
+              </button>
+
+              {isAdmin && blog && (
+                <>
+                  <Link
+                    href={`/blogs/${blogId}/edit`}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm cursor-pointer"
+                    title="Edit Article"
+                  >
+                    <LuPencil className="w-4 h-4" />
+                    <span>Edit</span>
+                  </Link>
+
+                  <ThrottledButton
+                    type="button"
+                    onClick={handleDelete}
+                    loadingText="Deleting..."
+                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg shadow-sm cursor-pointer"
+                    title="Delete Article"
+                  >
+                    <LuTrash2 className="w-4 h-4" />
+                    <span>Delete</span>
+                  </ThrottledButton>
+                </>
+              )}
+            </div>
           </div>
 
           {error ? (
@@ -229,8 +277,8 @@ export default function BlogPost({ id }: { id: string }) {
                 </div>
               </div>
 
-              {/* Card footer — matches BlogForm preview footer */}
-              <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+              {/* Card footer */}
+              <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-4">
                 <Link
                   href="/blogs"
                   className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-contingent transition-colors cursor-pointer"
@@ -238,17 +286,48 @@ export default function BlogPost({ id }: { id: string }) {
                   <LuArrowLeft className="w-4 h-4" />
                   Back to All Articles
                 </Link>
-                {isAdmin && (
-                  <ThrottledButton
+
+                <div className="flex items-center gap-2">
+                  <button
                     type="button"
-                    onClick={handleDelete}
-                    loadingText="Deleting..."
-                    className="flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700"
+                    onClick={handleShare}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-contingent bg-white border border-gray-200 rounded-lg transition-all cursor-pointer"
                   >
-                    <LuTrash2 className="w-4 h-4" />
-                    Delete Post
-                  </ThrottledButton>
-                )}
+                    {copied ? (
+                      <>
+                        <LuCheck className="w-3.5 h-3.5 text-green-600" />
+                        <span className="text-green-600">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <LuShare2 className="w-3.5 h-3.5" />
+                        <span>Share</span>
+                      </>
+                    )}
+                  </button>
+
+                  {isAdmin && (
+                    <>
+                      <Link
+                        href={`/blogs/${blogId}/edit`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-100 rounded-lg transition-all cursor-pointer"
+                      >
+                        <LuPencil className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </Link>
+
+                      <ThrottledButton
+                        type="button"
+                        onClick={handleDelete}
+                        loadingText="Deleting..."
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 hover:text-white bg-red-50 hover:bg-red-500 border border-red-100 rounded-lg transition-all"
+                      >
+                        <LuTrash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </ThrottledButton>
+                    </>
+                  )}
+                </div>
               </div>
             </article>
           )}
