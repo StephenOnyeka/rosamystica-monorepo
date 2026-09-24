@@ -53,16 +53,24 @@ export default function BlogPost({ id }: { id: string }) {
           </svg>
         </div>
       </Link>
-      <div key={blog.id || blog._id || ""} className="bg-white p-6 mb-6">
-        <p className="font-bold text-center text-3xl">{blog.title}</p>
-        <br />
+      <div key={blog.id || blog._id || ""} className="bg-white p-6 mb-6 max-w-5xl mx-auto rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        {(blog.image || (blog as any).coverImage) && (
+          <div className="w-full h-72 md:h-96 -mx-6 -mt-6 mb-8 bg-gray-900 overflow-hidden">
+            <img
+              src={(blog.image || (blog as any).coverImage) as string}
+              alt={blog.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+        <h1 className="font-bold text-center text-3xl md:text-4xl text-gray-900 mb-6 font-playfair">{blog.title}</h1>
         <div
-          className=""
+          className="prose prose-lg max-w-none text-gray-800 leading-relaxed font-poppins"
           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.body) }}
         />
         <br />
-        <p>
-          {formatDistanceToNow(new Date(blog.createdAt), {
+        <p className="text-sm text-gray-400 font-medium">
+          Published {formatDistanceToNow(new Date(blog.createdAt), {
             addSuffix: true,
           })}
         </p>

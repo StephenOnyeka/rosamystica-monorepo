@@ -33,8 +33,18 @@ function BlogsDetails({ blog }: BlogsDetailsProps) {
     <div>
       {/* How the blogs render in an array of all blogs */}
 
-      <div key={blogId} className="bg-white my-4 font-poppins">
-        {/* <img src={blog.titleImg} alt="Preview" width={500} height={500} /> */}
+      <div key={blogId} className="bg-white my-6 font-poppins rounded-xl overflow-hidden">
+        {(blog.image || (blog as any).coverImage || (blog as any).titleImg) && (
+          <Link href={`/blogs/${blogId}`}>
+            <div className="w-full h-48 md:h-60 rounded-xl overflow-hidden mb-4 bg-gray-100">
+              <img
+                src={(blog.image || (blog as any).coverImage || (blog as any).titleImg) as string}
+                alt={blog.title}
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          </Link>
+        )}
         <p className="text-sm text-slate-400 font-normal">
           {formatDistanceToNow(new Date(blog.createdAt), {
             addSuffix: true,
