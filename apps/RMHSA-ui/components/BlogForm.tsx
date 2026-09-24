@@ -177,15 +177,16 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
 
                   <hr className="border-gray-200 mb-8" />
 
-                  {/* Body HTML Content */}
-                  <div
-                    className="prose prose-lg max-w-none text-gray-800 leading-relaxed [&_img]:max-w-[400px] [&_img]:w-auto [&_img]:h-auto [&_img]:mx-auto [&_img]:block [&_img]:rounded-lg [&_img]:my-6"
-                    dangerouslySetInnerHTML={{
-                      __html:
-                        body ||
-                        "<p className='text-gray-400 italic'>No body content entered yet...</p>",
-                    }}
-                  />
+                  {/* Body HTML Content with Tiptap ProseMirror styling */}
+                  <div className="tiptap ProseMirror simple-editor text-gray-900 leading-relaxed font-poppins [&_img]:max-w-[400px] [&_img]:w-auto [&_img]:h-auto [&_img]:mx-auto [&_img]:block [&_img]:rounded-lg [&_img]:my-6">
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          body ||
+                          "<p className='text-gray-400 italic'>No body content entered yet...</p>",
+                      }}
+                    />
+                  </div>
                 </div>
 
                 {/* Footer Controls */}
@@ -213,14 +214,11 @@ function BlogForm({ redirectAfterSubmit }: BlogFormProps = {}) {
             /* ── Editor Form Mode ── */
             <form
               onSubmit={handleSubmit}
-              className={`w-full pt-8 ${geist.className}`}
+              className={`w-full pt-0 ${geist.className}`}
             >
               <div className="max-w-5xl mx-auto">
                 {/* Form Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Create New Blog Post
-                  </h2>
+                <div className="flex items-center justify-end mb-6">
                   <button
                     type="button"
                     onClick={handlePreviewToggle}

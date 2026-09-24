@@ -14,11 +14,17 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 
   &-group {
     display: flex;
     align-items: center;
     gap: 0.125rem;
+    flex-shrink: 0;
 
     &:empty {
       display: none;
@@ -42,25 +48,17 @@
     overflow-x: auto;
     overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
 
-    &::-webkit-scrollbar {
-      display: none;
-    }
-
-    @media (max-width: 480px) {
-      position: absolute;
-      top: auto;
-      height: calc(var(--tt-toolbar-height) + var(--tt-safe-area-bottom));
-      border-top: 1px solid var(--tt-toolbar-border-color);
-      border-bottom: none;
-      padding: 0 0.5rem var(--tt-safe-area-bottom);
-      flex-wrap: nowrap;
+    @media (max-width: 768px) {
+      position: sticky;
+      top: 0;
+      overflow-x: auto !important;
+      flex-wrap: nowrap !important;
+      padding: 0.5rem;
       justify-content: flex-start;
 
       .tiptap-toolbar-group {
-        flex: 0 0 auto;
+        flex: 0 0 auto !important;
       }
     }
   }
