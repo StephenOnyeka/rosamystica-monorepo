@@ -6,7 +6,6 @@ import Link from "next/link";
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
-import Footer from "@/components/Footer";
 
 import { FaFacebookF } from "react-icons/fa";
 import {
@@ -275,7 +274,6 @@ export default function ContactUs() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

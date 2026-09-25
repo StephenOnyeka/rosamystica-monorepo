@@ -11,7 +11,6 @@ import {
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
-import Footer from "@/components/Footer";
 
 export default function About() {
   const [show, setShow] = useState(false);
@@ -20,7 +19,7 @@ export default function About() {
     <div>
       <Topfile />
       <ScrollDiv />
-      <div className="font-poppins overflow-hidden">
+      <div className="font-poppins">
         <div className="bg-[url('/Edited/PSX20.jpg')] bg-cover bg-no-repeat bg-center ">
           <div
             id="About_container-1"
@@ -297,10 +296,19 @@ export default function About() {
           </div>
         </div>
 
-        <div id="About_container-3" className="h-screen absolute max-md:h-fit">
-          <div className="flex w-full h-5/6 max-md:flex-col max-sm:pt-10 max-md:mt-6">
-            <div className="flex items-center w-full max-md:pb-8">
-              <div className="flex flex-col gap-6 px-10 mr-10 max-md:mr-0 ">
+        {/* Commented out previous version for reference */}
+        {/* <div id="About_container-3" className="relative w-full min-h-screen max-md:min-h-fit"> */}
+
+        <div
+          id="About_container-3"
+          className="relative w-full max-md:min-h-fit"
+        >
+          {/* Using Grid for proper layout with visual stacking */}
+          {/* <div className="grid gap-8 max-md:gap-6"> */}
+          <div className="grid gap-0 max-md:gap-0">
+            {/* Special School Tour Section */}
+            <div className="grid md:grid-cols-2 items-center gap-y-8">
+              <div className="flex flex-col gap-6 px-10 mr-10">
                 <div className="relative">
                   <Image
                     src="/svgs/about-icon-1.png"
@@ -320,14 +328,13 @@ export default function About() {
                   makes our school a special place to learn and grow.
                 </p>
               </div>
+              <div className="bg-cover bg-[url('/images/R-main.jpg')] w-full h-[500px] md:max-h-full"></div>
             </div>
-            <div className=" school bg-cover w-full max-sm:py-36"></div>
-          </div>
 
-          <div className="flex w-full h-5/6 max-md:flex-col max-sm:pt-10">
-            <div className="bg-[url('/grad1.png')] bg-cover bg-center w-full max-sm:py-36 max-md:hidden"></div>
-            <div className="flex items-center w-full max-md:pb-8">
-              <div className="flex flex-col gap-6 px-10 ml-10 max-md:ml-0">
+            {/* Graduation Section */}
+            <div className="grid md:grid-cols-2 items-center gap-y-8">
+              <div className="bg-cover bg-[url('/grad1.png')] w-full h-[500px] md:max-h-full"></div>
+              <div className="flex flex-col gap-6 px-10 ml-10">
                 <div className="relative">
                   <Image
                     src="/svgs/about-icon-2.png"
@@ -348,12 +355,10 @@ export default function About() {
                 </p>
               </div>
             </div>
-            <div className="bg-[url('/New-Grads.jpg')] bg-cover w-full max-sm:py-36 hidden max-md:block"></div>
-          </div>
 
-          <div className="flex w-full h-5/6 max-md:flex-col max-sm:pt-10">
-            <div className="flex items-center w-full max-md:pb-8">
-              <div className="flex flex-col  gap-6 px-10 mr-10">
+            {/* Powerful Alumnae Section */}
+            <div className="grid md:grid-cols-2 items-center gap-y-8">
+              <div className="flex flex-col gap-6 px-10 mr-10">
                 <div className="relative">
                   <Image
                     src="/svgs/about-icon-3.png"
@@ -375,51 +380,50 @@ export default function About() {
                   and service.
                 </p>
               </div>
+              <div className="bg-contain bg-no-repeat bg-left bg-[url('/FunPic_20250326_173347003.jpg')] w-full h-[500px] md:max-h-full"></div>
             </div>
 
-            <div className="bg-[url('/FunPic_20250326_173347003.jpg')] bg-contain bg-no-repeat bg-center w-full max-sm:py-36"></div>
-          </div>
-
-          <div className="bg-contingent py-16 w-full">
-            <div className="grid grid-flow-col gap-28 justify-center content-center items-center max-md:flex max-md:flex-wrap max-md:justify-evenly max-md:gap-12 max-md:items-center">
-              <Image
-                src="/1-Banner.png"
-                alt=""
-                width={80}
-                height={60}
-                className="w-20 max-sm:w-16"
-              />
-              <Image
-                src="/2-Banner.png"
-                alt=""
-                width={80}
-                height={60}
-                className="w-20 max-sm:w-16"
-              />
-              <Image
-                src="/3-Banner.png"
-                alt=""
-                width={80}
-                height={60}
-                className="max-sm:w-10"
-              />
-              <Image
-                src="/4-Banner.png"
-                alt=""
-                width={176}
-                height={156}
-                className="w-44 max-sm:w-32"
-              />
-              <Image
-                src="/5-Banner1.png"
-                alt=""
-                width={80}
-                height={60}
-                className="w-20 max-sm:w-20 bg-white"
-              />
+            {/* Banners Section */}
+            <div className="bg-contingent py-16 w-full">
+              <div className="grid grid-flow-col gap-28 justify-center content-center items-center max-md:flex max-md:flex-wrap max-md:justify-evenly max-md:gap-12 max-md:items-center">
+                <Image
+                  src="/1-Banner.png"
+                  alt=""
+                  width={80}
+                  height={60}
+                  className="w-20 max-sm:w-16"
+                />
+                <Image
+                  src="/2-Banner.png"
+                  alt=""
+                  width={80}
+                  height={60}
+                  className="w-20 max-sm:w-16"
+                />
+                <Image
+                  src="/3-Banner.png"
+                  alt=""
+                  width={80}
+                  height={60}
+                  className="max-sm:w-10"
+                />
+                <Image
+                  src="/4-Banner.png"
+                  alt=""
+                  width={176}
+                  height={156}
+                  className="w-44 max-sm:w-32"
+                />
+                <Image
+                  src="/5-Banner1.png"
+                  alt=""
+                  width={80}
+                  height={60}
+                  className="w-20 max-sm:w-20 bg-white"
+                />
+              </div>
             </div>
           </div>
-          <Footer />
         </div>
       </div>
     </div>

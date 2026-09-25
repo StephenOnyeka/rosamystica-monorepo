@@ -13,7 +13,7 @@ function Footer() {
 
   return (
     <>
-      <div className="font-poppins">
+      <div className="absolute w-full font-poppins">
         <div className="py-20 px-8 bg-black/90 max-sm:px-6">
           <div className="flex justify-center text-white/50 gap-8 max-sm:flex-wrap max-sm:gap-10 ">
             <div className="box w-full text-white leading-9">

@@ -4,7 +4,6 @@ import { CgEditBlackPoint } from "react-icons/cg";
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
-import Footer from "@/components/Footer";
 import SchoolJsonLd from "@/components/SchoolJsonLd";
 import { pageMetadata } from "@/lib/seo";
 
@@ -357,7 +356,6 @@ export default function Admission() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

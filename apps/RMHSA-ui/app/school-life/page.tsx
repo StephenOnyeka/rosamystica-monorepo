@@ -10,7 +10,6 @@ import {
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
-import Footer from "@/components/Footer";
 
 import {
   Drawer,
@@ -544,7 +543,6 @@ export default function SchoolLife() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

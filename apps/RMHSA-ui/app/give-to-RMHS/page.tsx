@@ -8,7 +8,6 @@ import ScrollDiv from "@/components/Scroll";
 import Accordion from "@/components/Accordion";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
-import Footer from "@/components/Footer";
 
 export default function Donate() {
   const [openAccordionId, setOpenAccordionId] = useState<number | null>(null);
@@ -290,7 +289,6 @@ export default function Donate() {
               </p>
             </div>
           </div>
-          <Footer />
         </div>
       </div>
     </div>

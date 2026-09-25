@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Poppins } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import Footer from "@/components/Footer";
 import {
   DEFAULT_DESCRIPTION,
   DEFAULT_KEYWORDS,
@@ -83,7 +84,10 @@ export default function RootLayout({
     >
       <body>
         <div className="content">
-          <Providers>{children}</Providers>
+          <Providers>
+            {children}
+            <Footer />
+          </Providers>
         </div>
       </body>
     </html>

@@ -10,7 +10,6 @@ import Slide from "@/components/Slide";
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
-import Footer from "@/components/Footer";
 import { useSubscriptionsContext } from "@/hooks/useSubscriptionsContext";
 import { customFetch } from "@/lib/api";
 import { BsBoxArrowUpRight } from "react-icons/bs";
@@ -532,7 +531,6 @@ function Home1() {
                     </div>
                   </div>
                 </div>
-                <Footer />
               </div>
             </div>
           </div>
