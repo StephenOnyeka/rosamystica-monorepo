@@ -5,17 +5,23 @@ import type { Notification } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
 import { cleanHtmlContent } from "@/lib/utils";
 import { LuClock, LuTag } from "react-icons/lu";
-import { NotificationBing, Note } from "iconsax-reactjs";
+import { NotificationBing, Note, Edit } from "iconsax-reactjs";
+import { useAdminContext } from "@/hooks/useAdminContext";
+import { IoPencil, IoPencilOutline } from "react-icons/io5";
 
 interface NotificationDetailModalProps {
   notification: Notification | null;
   onClose: () => void;
+  onEdit?: (notification: Notification) => void;
 }
 
 export default function NotificationDetailModal({
   notification,
   onClose,
+  onEdit,
 }: NotificationDetailModalProps) {
+  const { isAdmin } = useAdminContext();
+
   if (!notification) return null;
 
   const isBlogType =
@@ -34,7 +40,29 @@ export default function NotificationDetailModal({
   );
 
   return (
-    <Modal isOpen={!!notification} onClose={onClose} maxWidth="max-w-3xl">
+    <Modal
+      isOpen={!!notification}
+      onClose={onClose}
+      maxWidth="max-w-3xl"
+      footer={
+        <div className="w-full flex justify-end">
+          <div className="flex gap-3">
+            {isAdmin && onEdit && !isBlogType && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onEdit(notification);
+                }}
+                className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition-all shadow-xs cursor-pointer text-sm flex items-center gap-2"
+              >
+                <IoPencil size="18" />
+                Edit
+              </button>
+            )}
+          </div>
+        </div>
+      }
+    >
       <div className="space-y-6">
         {/* Header section with Iconsax Icon & Title */}
         <div className="flex items-start gap-4">
@@ -79,16 +107,6 @@ export default function NotificationDetailModal({
           className="prose max-w-none text-gray-800 leading-relaxed text-base font-normal space-y-4"
           dangerouslySetInnerHTML={{ __html: sanitizedBody }}
         />
-
-        {/* Action / Close button */}
-        <div className="pt-4 border-t border-gray-100 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-6 py-2.5 bg-contingent hover:bg-contingent-2 text-white font-semibold rounded-xl transition-all shadow-xs cursor-pointer text-sm"
-          >
-            Close
-          </button>
-        </div>
       </div>
     </Modal>
   );

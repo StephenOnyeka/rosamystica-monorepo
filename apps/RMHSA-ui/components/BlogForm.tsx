@@ -175,7 +175,7 @@ function BlogForm({
 
   const handlePreviewToggle = () => setPreview((p) => !p);
 
-  const defaultSubmitText = isEditing ? "Save Changes" : "Publish Post";
+  const defaultSubmitText = isEditing ? "Save" : "Publish";
   const actionButtonText = submitLabel || defaultSubmitText;
 
   return (
@@ -303,19 +303,6 @@ function BlogForm({
             >
               <div className="max-w-5xl mx-auto">
                 {/* Form Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-contingent font-playfair">
-                    {isEditing ? "Edit Blog Post" : "Create New Blog Post"}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={handlePreviewToggle}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition-all cursor-pointer"
-                  >
-                    <LuEye className="w-4 h-4 text-contingent" />
-                    Preview Post
-                  </button>
-                </div>
 
                 {/* Cover / Background Image Upload Zone */}
                 <div className="mb-6">
@@ -411,7 +398,7 @@ function BlogForm({
                     onClick={handlePreviewToggle}
                   >
                     <LuEye className="w-4 h-4 text-contingent" />
-                    Preview Post
+                    Preview
                   </button>
                 </div>
               </div>

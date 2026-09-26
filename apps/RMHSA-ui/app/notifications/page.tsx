@@ -17,6 +17,7 @@ import { customFetch } from "@/lib/api";
 import Modal from "@/components/Modal";
 import NotificationDetailModal from "@/components/NotificationDetailModal";
 import { LuBell, LuBriefcase, LuCircle, LuFileText, LuFilter, LuList, LuPlus } from "react-icons/lu";
+import { NotificationBing } from "iconsax-reactjs";
 
 // Dynamically import NotificationForm with no SSR
 const NotificationForm = dynamic(
@@ -45,6 +46,8 @@ function NotificationsContent() {
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingNotification, setEditingNotification] =
+    useState<Notification | null>(null);
   const [selectedNotification, setSelectedNotification] =
     useState<Notification | null>(null);
 
@@ -196,6 +199,7 @@ function NotificationsContent() {
                       key={notification.id || notification._id}
                       notification={notification}
                       onSelect={(notif) => setSelectedNotification(notif)}
+                      onEdit={(notif) => setEditingNotification(notif)}
                     />
                   ))}
                 </div>
@@ -232,19 +236,29 @@ function NotificationsContent() {
         </div>
       </div>
 
-      {/* Modal for Creating Notifications */}
+      {/* Modal for Creating / Editing Notifications */}
       {isAdmin && (
         <Modal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          // title="Create Notification"
-          title={(<h2 className="text-xl font-bold text-contingent font-playfair flex items-center gap-2">
-            <LuBell className="w-5 h-5" />
-            Create New Notification
-          </h2>)}
+          isOpen={isCreateModalOpen || !!editingNotification}
+          onClose={() => {
+            setIsCreateModalOpen(false);
+            setEditingNotification(null);
+          }}
+          title={
+            <h2 className="text-xl font-bold text-contingent font-playfair flex items-center gap-2">
+              <NotificationBing size="22" variant="Bold" />
+              {editingNotification ? "Edit Notification" : "Create New Notification"}
+            </h2>
+          }
           maxWidth="max-w-3xl"
         >
-          <NotificationForm onClose={() => setIsCreateModalOpen(false)} />
+          <NotificationForm
+            initialData={editingNotification}
+            onClose={() => {
+              setIsCreateModalOpen(false);
+              setEditingNotification(null);
+            }}
+          />
         </Modal>
       )}
 
@@ -257,6 +271,7 @@ function NotificationsContent() {
             router.replace("/notifications");
           }
         }}
+        onEdit={(notif) => setEditingNotification(notif)}
       />
     </div>
   );

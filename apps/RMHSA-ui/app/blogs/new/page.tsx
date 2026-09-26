@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowLeft2 } from "iconsax-reactjs";
+import { ArrowLeft2, Note } from "iconsax-reactjs";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
 import ScrollDiv from "@/components/Scroll";
@@ -28,16 +28,19 @@ export default function NewBlogPage() {
         <br />
 
         {/* Page header */}
-        <div className="flex items-center gap-x-4 mb-8">
+        <div className="flex items-center gap-4 mb-8">
           <Link
             href="/blogs"
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-contingent/10 hover:bg-contingent/20 text-contingent transition-colors duration-200"
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-contingent/10 hover:bg-contingent/20 text-contingent transition-colors duration-200 flex-shrink-0"
             aria-label="Back to blogs"
           >
             <ArrowLeft2 size={20} color="#00416d" variant="Bold" />
           </Link>
+          <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 shadow-xs border-double border-4 bg-purple-50 text-purple-600 border-purple-100">
+            <Note size="24" variant="Bold" />
+          </div>
           <div>
-            <h1 className="text-3xl font-bold text-contingent font-playfair">
+            <h1 className="text-3xl font-bold font-playfair text-contingent">
               Create New Blog
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">

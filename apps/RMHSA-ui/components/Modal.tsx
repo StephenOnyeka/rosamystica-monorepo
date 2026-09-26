@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoCloseCircle } from "react-icons/io5";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: ReactNode;
+  footer?: ReactNode;
   children: ReactNode;
   maxWidth?: string;
 }
@@ -15,6 +16,7 @@ export default function Modal({
   isOpen,
   onClose,
   title,
+  footer,
   children,
   maxWidth = "max-w-2xl",
 }: ModalProps) {
@@ -58,7 +60,9 @@ export default function Modal({
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
           {title ? (
             typeof title === "string" ? (
-              <h2 className="text-xl font-bold text-gray-800 font-playfair">{title}</h2>
+              <h2 className="text-xl font-bold text-gray-800 font-playfair">
+                {title}
+              </h2>
             ) : (
               title
             )
@@ -67,15 +71,22 @@ export default function Modal({
           )}
           <button
             onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+            className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
             aria-label="Close modal"
           >
-            <IoClose className="w-6 h-6" />
+            <IoCloseCircle className="w-6 h-6" />
           </button>
         </div>
 
         {/* Scrollable Body */}
         <div className="p-6 overflow-y-auto flex-1">{children}</div>
+
+        {/* Footer */}
+        {footer && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

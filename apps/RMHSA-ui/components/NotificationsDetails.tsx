@@ -8,16 +8,18 @@ import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Notification } from "@/lib/types";
 import { customFetch } from "@/lib/api";
 import { cleanHtmlContent } from "@/lib/utils";
-import { NotificationBing, Note } from "iconsax-reactjs";
+import { NotificationBing, Note, Edit } from "iconsax-reactjs";
 
 interface NotificationsDetailsProps {
   notification: Notification;
   onSelect?: (notification: Notification) => void;
+  onEdit?: (notification: Notification) => void;
 }
 
 function NotificationsDetails({
   notification,
   onSelect,
+  onEdit,
 }: NotificationsDetailsProps) {
   const { dispatch } = useNotificationsContext();
   const { isAdmin } = useAdminContext();
@@ -131,18 +133,32 @@ function NotificationsDetails({
                 </span>
               )}
 
-              {/* Delete button for admins */}
+              {/* Actions for admins */}
               {isAdmin && (
-                <button
-                  className="relative group opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={handleDelete}
-                  title="Delete notification"
-                >
-                  <IoIosCloseCircle
-                    size={24}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
-                  />
-                </button>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {!isPushedBlog && onEdit && (
+                    <button
+                      className="p-1 text-gray-400 hover:text-contingent transition-colors rounded-lg hover:bg-gray-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(notification);
+                      }}
+                      title="Edit notification"
+                    >
+                      <Edit size={18} variant="Bold" />
+                    </button>
+                  )}
+                  <button
+                    className="p-1 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-gray-100"
+                    onClick={handleDelete}
+                    title="Delete notification"
+                  >
+                    <IoIosCloseCircle
+                      size={22}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                    />
+                  </button>
+                </div>
               )}
             </div>
           </div>

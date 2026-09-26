@@ -10,29 +10,26 @@ import type { Notification } from "@/lib/types";
 
 import { customFetch } from "@/lib/api";
 import { ThrottledButton } from "@/components/ThrottledButton";
-import {
-  LuPencil,
-  LuSend,
-  LuEye,
-  LuCheck,
-  LuBell,
-} from "react-icons/lu";
+import { LuPencil, LuSend, LuEye, LuCheck, LuBell } from "react-icons/lu";
 import { NotificationBing } from "iconsax-reactjs";
 import { Geist } from "next/font/google";
+import { cleanHtmlContent } from "@/lib/utils";
 
 const geist = Geist({
   subsets: ["latin"],
 });
 
 interface NotificationFormProps {
+  initialData?: Notification | null;
   onClose?: () => void;
 }
 
-function NotificationForm({ onClose }: NotificationFormProps) {
+function NotificationForm({ initialData, onClose }: NotificationFormProps) {
+  const isEditing = Boolean(initialData && (initialData.id || initialData._id));
   const { dispatch } = useNotificationsContext();
-  const [title, setTitle] = useState("");
-  const [desc, setDesc] = useState("");
-  const [body, setBody] = useState("");
+  const [title, setTitle] = useState(initialData?.title ?? "");
+  const [desc, setDesc] = useState(initialData?.desc ?? "");
+  const [body, setBody] = useState(initialData?.body ?? "");
   const [error, setError] = useState<string | null>(null);
   const [emptyFields, setEmptyFields] = useState<string[]>([]);
   const [preview, setPreview] = useState(false);
@@ -44,6 +41,14 @@ function NotificationForm({ onClose }: NotificationFormProps) {
     }
   }, []);
 
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title ?? "");
+      setDesc(initialData.desc ?? "");
+      setBody(initialData.body ?? "");
+    }
+  }, [initialData]);
+
   const handleSubmit = async (
     e?: SyntheticEvent<HTMLFormElement | HTMLButtonElement>,
   ) => {
@@ -54,29 +59,54 @@ function NotificationForm({ onClose }: NotificationFormProps) {
       return;
     }
 
+    // Auto-generate description from first line of body if not provided
+    const generatedDesc =
+      !desc && body
+        ? cleanHtmlContent(body).substring(0, 150) +
+          (cleanHtmlContent(body).length > 150 ? "..." : "")
+        : desc || title.substring(0, 100);
+
     const notificationPayload = {
       title,
-      desc,
+      desc: generatedDesc,
       body,
-      type: "manual",
+      type: initialData?.type || "manual",
     };
 
-    try {
-      const json = await customFetch<Notification>("/api/notifications", {
-        method: "POST",
-        body: JSON.stringify(notificationPayload),
-        token: token ?? undefined,
-      });
-      setTitle("");
-      setDesc("");
-      setBody("");
-      setError(null);
-      setEmptyFields([]);
-      console.log("new notification added", json);
-      dispatch({ type: "CREATE_NOTIFICATION", payload: json });
-      onClose?.();
-    } catch (err: any) {
-      setError(err.message || "Failed to create notification");
+    if (isEditing && initialData) {
+      const targetId = initialData.id || initialData._id || "";
+      try {
+        const json = await customFetch<Notification>(
+          `/api/notifications/${targetId}`,
+          {
+            method: "PATCH",
+            body: JSON.stringify(notificationPayload),
+            token: token ?? undefined,
+          },
+        );
+        setError(null);
+        dispatch({ type: "UPDATE_NOTIFICATION", payload: json });
+        onClose?.();
+      } catch (err: any) {
+        setError(err.message || "Failed to update notification");
+      }
+    } else {
+      try {
+        const json = await customFetch<Notification>("/api/notifications", {
+          method: "POST",
+          body: JSON.stringify(notificationPayload),
+          token: token ?? undefined,
+        });
+        setTitle("");
+        setDesc("");
+        setBody("");
+        setError(null);
+        setEmptyFields([]);
+        dispatch({ type: "CREATE_NOTIFICATION", payload: json });
+        onClose?.();
+      } catch (err: any) {
+        setError(err.message || "Failed to create notification");
+      }
     }
   };
 
@@ -85,8 +115,7 @@ function NotificationForm({ onClose }: NotificationFormProps) {
   };
 
   const getPreviewText = () => {
-    let text = body || desc || "";
-    text = text.replace(/<[^>]*>/g, "").trim();
+    const text = cleanHtmlContent(body || desc || "");
     if (text.length > 100) {
       return text.substring(0, 100) + "...";
     }
@@ -152,8 +181,17 @@ function NotificationForm({ onClose }: NotificationFormProps) {
                       {getPreviewText()}
                     </p>
 
+                    {/* Clean rendered content preview with proper styling */}
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 prose prose-sm max-w-none">
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: cleanHtmlContent(body),
+                        }}
+                      />
+                    </div>
+
                     {/* Type badge */}
-                    <div className="mt-2">
+                    <div className="mt-4">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                         Manual Announcement
                       </span>
@@ -164,27 +202,8 @@ function NotificationForm({ onClose }: NotificationFormProps) {
             </div>
           ) : (
             /* ── Editor Form Mode ── */
-            <form
-              onSubmit={handleSubmit}
-              className="w-full pt-2"
-            >
+            <form onSubmit={handleSubmit} className="w-full pt-2">
               <div className="max-w-2xl mx-auto">
-                {/* Form Header */}
-                {/* <div className="flex items-center justify-between mb-6"> */}
-                  {/* <h2 className="text-xl font-bold text-contingent font-playfair flex items-center gap-2">
-                    <LuBell className="w-5 h-5" />
-                    Create New Notification
-                  </h2> */}
-                  {/* <button
-                    type="button"
-                    onClick={handlePreviewToggle}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition-all cursor-pointer"
-                  >
-                    <LuEye className="w-4 h-4 text-contingent" />
-                    Preview
-                  </button> */}
-                {/* </div> */}
-
                 {/* Title */}
                 <div className="mb-6">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -209,7 +228,7 @@ function NotificationForm({ onClose }: NotificationFormProps) {
                     type="text"
                     onChange={(e) => setDesc(e.target.value)}
                     value={desc}
-                    placeholder="A brief summary of the notification..."
+                    placeholder="A brief summary of the notification... (auto-generated if not provided)"
                   />
                 </div>
 
@@ -240,11 +259,11 @@ function NotificationForm({ onClose }: NotificationFormProps) {
                 <div className="flex items-center gap-4 mb-8">
                   <ThrottledButton
                     type="submit"
-                    loadingText="Publishing..."
+                    loadingText={isEditing ? "Updating..." : "Publishing..."}
                     className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md"
                   >
                     <LuSend className="w-4 h-4" />
-                    Publish Notification
+                    {isEditing ? "Update" : "Publish"}
                   </ThrottledButton>
                   <button
                     type="button"
@@ -252,7 +271,7 @@ function NotificationForm({ onClose }: NotificationFormProps) {
                     onClick={handlePreviewToggle}
                   >
                     <LuEye className="w-4 h-4 text-contingent" />
-                    Preview Notification
+                    Preview
                   </button>
                 </div>
               </div>

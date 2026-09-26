@@ -20,7 +20,10 @@ export class CreateBlogDto {
   @ApiProperty({ description: 'Cover image URL or base64', required: false })
   coverImage?: string;
 
-  @ApiProperty({ description: 'Background image URL or base64', required: false })
+  @ApiProperty({
+    description: 'Background image URL or base64',
+    required: false,
+  })
   backgroundImage?: string;
 }
 
@@ -42,6 +45,9 @@ export class UpdateBlogDto {
   @ApiProperty({ description: 'Cover image URL or base64', required: false })
   coverImage?: string;
 
-  @ApiProperty({ description: 'Background image URL or base64', required: false })
+  @ApiProperty({
+    description: 'Background image URL or base64',
+    required: false,
+  })
   backgroundImage?: string;
 }
