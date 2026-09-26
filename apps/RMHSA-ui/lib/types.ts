@@ -18,8 +18,11 @@ export interface Notification {
   id?: string;
   _id?: string;
   title: string;
-  desc: string;
-  body: string;
+  desc?: string;
+  body?: string;
+  type?: string;
+  relatedBlogId?: string;
+  blogId?: string;
   createdAt: string;
   updatedAt?: string;
   [key: string]: unknown;

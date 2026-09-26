@@ -29,21 +29,35 @@ export const notificationsReducer = (
   state: NotificationsState,
   action: NotificationsAction,
 ): NotificationsState => {
+  // Helper function to compare notification IDs (supports both 'id' and '_id')
+  const compareIds = (
+    notification: Notification,
+    targetId?: string | null,
+  ): boolean => {
+    if (!targetId) return false;
+    return notification.id === targetId || notification._id === targetId;
+  };
+
   switch (action.type) {
     case "SET_NOTIFICATIONS":
       return { notifications: action.payload };
     case "CREATE_NOTIFICATION":
-      return { notifications: [action.payload, ...(state.notifications ?? [])] };
+      return {
+        notifications: [action.payload, ...(state.notifications ?? [])],
+      };
     case "DELETE_NOTIFICATION":
       return {
         notifications: (state.notifications ?? []).filter(
-          (w) => w._id !== action.payload._id,
+          (w) =>
+            !compareIds(w, action.payload?._id) &&
+            !compareIds(w, action.payload?.id),
         ),
       };
     case "UPDATE_NOTIFICATION":
       return {
         notifications: (state.notifications ?? []).map((notification) =>
-          notification._id === action.payload._id
+          compareIds(notification, action.payload._id) ||
+          compareIds(notification, action.payload.id)
             ? action.payload
             : notification,
         ),

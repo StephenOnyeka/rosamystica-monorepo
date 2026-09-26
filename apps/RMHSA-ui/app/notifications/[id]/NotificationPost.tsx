@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
 import Loading from "@/components/loading";
-import DOMPurify from "dompurify";
 import { formatDistanceToNow } from "date-fns";
 import type { Notification } from "@/lib/types";
-
 import { customFetch } from "@/lib/api";
+import { cleanHtmlContent } from "@/lib/utils";
 
 export default function NotificationPost({ id }: { id: string }) {
+  const router = useRouter();
   const [notification, setNotification] = useState<Notification | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -22,15 +22,22 @@ export default function NotificationPost({ id }: { id: string }) {
           `/api/notifications/${id}`
         );
         setNotification(data);
+        const relatedBlogId = (data.relatedBlogId || data.blogId) as string | undefined;
+        const isPushedBlog = data.type === "blog" || !!relatedBlogId;
+
+        if (isPushedBlog) {
+          router.replace(`/blogs/${relatedBlogId || id}`);
+        } else {
+          router.replace(`/notifications?id=${id}`);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
-      } finally {
         setLoading(false);
       }
     };
 
     fetchNotification();
-  }, [id]);
+  }, [id, router]);
 
   if (loading) return <Loading />;
   if (error) return <p>{error}</p>;
@@ -59,9 +66,9 @@ export default function NotificationPost({ id }: { id: string }) {
         <p className="font-bold text-center text-3xl">{notification.title}</p>
         <br />
         <div
-          className=""
+          className="prose max-w-none text-gray-800 leading-relaxed text-base"
           dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(notification.body),
+            __html: cleanHtmlContent(notification.body),
           }}
         />
         <br />

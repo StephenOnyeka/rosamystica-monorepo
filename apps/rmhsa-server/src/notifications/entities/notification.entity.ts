@@ -17,8 +17,14 @@ export class Notification {
   @Column({ type: 'text', nullable: true })
   desc?: string;
 
-  @Column({ type: 'text', nullable: false })
-  body: string;
+  @Column({ type: 'text', nullable: true })
+  body?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  type?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  relatedBlogId?: string;
 
   @CreateDateColumn()
   createdAt: Date;

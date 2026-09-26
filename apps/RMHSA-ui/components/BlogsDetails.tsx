@@ -150,7 +150,7 @@ function BlogsDetails({ blog }: BlogsDetailsProps) {
         </div>
 
         {/* Card Footer Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mt-6 pt-4 border-t border-gray-100">
+        <div className="flex flex-wrap max-sm:hidden items-center justify-between gap-3 mt-6 pt-4 border-t border-gray-100">
           <Link
             href={`/blogs/${blogId}`}
             className="inline-flex items-center gap-1.5 text-sm font-bold text-contingent hover:text-contingent-2 transition-all group-hover:translate-x-1 cursor-pointer"

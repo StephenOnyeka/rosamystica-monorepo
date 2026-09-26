@@ -6,6 +6,7 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { BlogsController } from './blogs.controller';
 import { BlogsService } from './blogs.service';
 import { Blog } from './entities/blog.entity';
+import { BlogNotificationService } from './blog-notification.service';
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { Blog } from './entities/blog.entity';
     AdminModule,
   ],
   controllers: [BlogsController],
-  providers: [BlogsService],
+  providers: [BlogsService, BlogNotificationService],
 })
 export class BlogsModule {}

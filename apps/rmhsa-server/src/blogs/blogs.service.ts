@@ -10,6 +10,7 @@ import { MailService } from '../mail/mail.service';
 import { Subscribe } from '../subscriptions/entities/subscribe.entity';
 import { CreateBlogDto, UpdateBlogDto } from './dto/blogs.dto';
 import { Blog } from './entities/blog.entity';
+import { BlogNotificationService } from './blog-notification.service';
 
 export interface PaginatedBlogs {
   blogs: Blog[];
@@ -25,6 +26,7 @@ export class BlogsService {
     @InjectRepository(Subscribe)
     private readonly subscribeRepository: Repository<Subscribe>,
     private readonly mailService: MailService,
+    private readonly blogNotificationService: BlogNotificationService,
   ) {}
 
   // Ported from blogController.js: getBlogs (paginated list).
@@ -74,7 +76,7 @@ export class BlogsService {
     try {
       // Add doc to db
       const blog = await this.blogRepository.save({
-        title: title || "",
+        title: title || '',
         desc,
         body: createBlogDto.body,
         image: imgVal,
@@ -90,6 +92,9 @@ export class BlogsService {
 
       // Send email notification
       await this.mailService.sendBlogNotification(subscriberEmails, blog);
+
+      // Create notification for the new blog via API call
+      await this.blogNotificationService.createNotificationFromBlog(blog);
 
       return blog;
     } catch {

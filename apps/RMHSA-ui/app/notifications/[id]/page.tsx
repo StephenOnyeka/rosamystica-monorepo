@@ -31,7 +31,7 @@ export async function generateMetadata({
 
   return buildMetadata({
     title: notification.title,
-    description: notification.desc,
+    description: notification.desc || "",
     path: `/notifications/${id}`,
     image: DEFAULT_OG_IMAGE,
     type: "article",
