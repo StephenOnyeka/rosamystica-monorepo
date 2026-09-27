@@ -8,7 +8,7 @@ import Link from "next/link";
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
-import NotificationsDetails from "@/components/NotificationsDetails";
+import NotificationsDetails from "@/components/NotificationDetail";
 import Loading from "@/components/loading";
 import { useNotificationsContext } from "@/hooks/useNotificationsContext";
 import { useAdminContext } from "@/hooks/useAdminContext";
@@ -16,7 +16,8 @@ import type { Notification } from "@/lib/types";
 import { customFetch } from "@/lib/api";
 import Modal from "@/components/Modal";
 import NotificationDetailModal from "@/components/NotificationDetailModal";
-import { LuBell, LuBriefcase, LuCircle, LuFileText, LuFilter, LuList, LuPlus } from "react-icons/lu";
+import { ThrottledButton } from "@/components/ThrottledButton";
+import { LuBell, LuBriefcase, LuCircle, LuEye, LuFileText, LuFilter, LuList, LuPencil, LuPlus, LuSend } from "react-icons/lu";
 import { NotificationBing } from "iconsax-reactjs";
 
 // Dynamically import NotificationForm with no SSR
@@ -50,6 +51,13 @@ function NotificationsContent() {
     useState<Notification | null>(null);
   const [selectedNotification, setSelectedNotification] =
     useState<Notification | null>(null);
+  const [isPreview, setIsPreview] = useState(false);
+
+  const handleCloseModal = () => {
+    setIsCreateModalOpen(false);
+    setEditingNotification(null);
+    setIsPreview(false);
+  };
 
   // Deep-linking handle for ?id= query param
   useEffect(() => {
@@ -240,24 +248,52 @@ function NotificationsContent() {
       {isAdmin && (
         <Modal
           isOpen={isCreateModalOpen || !!editingNotification}
-          onClose={() => {
-            setIsCreateModalOpen(false);
-            setEditingNotification(null);
-          }}
+          onClose={handleCloseModal}
           title={
             <h2 className="text-xl font-bold text-contingent font-playfair flex items-center gap-2">
               <NotificationBing size="22" variant="Bold" />
-              {editingNotification ? "Edit Notification" : "Create New Notification"}
+              {editingNotification
+                ? "Edit Notification"
+                : "Create New Notification"}
             </h2>
+          }
+          footer={
+            <div className="w-full flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsPreview(!isPreview)}
+                className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-all cursor-pointer shadow-xs"
+              >
+                {isPreview ? (
+                  <>
+                    <LuPencil className="w-4 h-4 text-contingent" />
+                    Back to Edit
+                  </>
+                ) : (
+                  <>
+                    <LuEye className="w-4 h-4 text-contingent" />
+                    Preview
+                  </>
+                )}
+              </button>
+              <ThrottledButton
+                type="submit"
+                form="notification-form"
+                className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                <LuSend className="w-4 h-4" />
+                {editingNotification ? "Update" : "Publish"}
+              </ThrottledButton>
+            </div>
           }
           maxWidth="max-w-3xl"
         >
           <NotificationForm
             initialData={editingNotification}
-            onClose={() => {
-              setIsCreateModalOpen(false);
-              setEditingNotification(null);
-            }}
+            hideFooterButtons
+            isPreview={isPreview}
+            onTogglePreview={() => setIsPreview(!isPreview)}
+            onClose={handleCloseModal}
           />
         </Modal>
       )}

@@ -3,11 +3,14 @@
 import Modal from "@/components/Modal";
 import type { Notification } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
-import { cleanHtmlContent } from "@/lib/utils";
-import { LuClock, LuTag } from "react-icons/lu";
+import { cleanHtmlContent, parseCleanHtml } from "@/lib/utils";
+import { LuClock, LuPencil, LuTag } from "react-icons/lu";
 import { NotificationBing, Note, Edit } from "iconsax-reactjs";
 import { useAdminContext } from "@/hooks/useAdminContext";
-import { IoPencil, IoPencilOutline } from "react-icons/io5";
+import { Geist } from "next/font/google";
+
+const geist = Geist({ subsets: ["latin"] });
+// import { IoPencil, IoPencilOutline } from "react-icons/io5";
 
 interface NotificationDetailModalProps {
   notification: Notification | null;
@@ -55,7 +58,8 @@ export default function NotificationDetailModal({
                 }}
                 className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition-all shadow-xs cursor-pointer text-sm flex items-center gap-2"
               >
-                <IoPencil size="18" />
+                {/* <IoPencil size="18" /> */}
+                <LuPencil size="18" />
                 Edit
               </button>
             )}
@@ -63,7 +67,7 @@ export default function NotificationDetailModal({
         </div>
       }
     >
-      <div className="space-y-6">
+      <div className={`space-y-6 ${geist.className}`}>
         {/* Header section with Iconsax Icon & Title */}
         <div className="flex items-start gap-4">
           <div
@@ -102,11 +106,10 @@ export default function NotificationDetailModal({
 
         <hr className="border-gray-100" />
 
-        {/* Content body rendered using clean dangerouslySetInnerHTML */}
-        <div
-          className="prose max-w-none text-gray-800 leading-relaxed text-base font-normal space-y-4"
-          dangerouslySetInnerHTML={{ __html: sanitizedBody }}
-        />
+        {/* Content body rendered using DOMPurify + html-react-parser */}
+        <div className="prose max-w-none text-gray-800 leading-relaxed text-base font-normal space-y-4">
+          {parseCleanHtml(notification.body || notification.desc || "")}
+        </div>
       </div>
     </Modal>
   );

@@ -7,7 +7,10 @@ import Link from "next/link";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Notification } from "@/lib/types";
 import { customFetch } from "@/lib/api";
-import { cleanHtmlContent } from "@/lib/utils";
+import { cleanHtmlContent, parseCleanHtml } from "@/lib/utils";
+import { Geist } from "next/font/google";
+
+const geist = Geist({ subsets: ["latin"] });
 import { NotificationBing, Note, Edit } from "iconsax-reactjs";
 
 interface NotificationsDetailsProps {
@@ -78,7 +81,7 @@ function NotificationsDetails({
     typeof notification.type === "string" ? notification.type : undefined;
 
   return (
-    <div className="mb-6 max-w-4xl mx-auto">
+    <div className={`mb-6 max-w-4xl mx-auto ${geist.className}`}>
       <div
         onClick={handleCardClick}
         className="flex bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow cursor-pointer group"
@@ -118,10 +121,9 @@ function NotificationsDetails({
               )}
 
               {/* Clean HTML content preview */}
-              <div
-                className="text-sm max-sm:text-xs text-gray-600 mt-1.5 line-clamp-2 font-normal prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: cleanHtml }}
-              />
+              <div className="text-sm max-sm:text-xs text-gray-600 mt-1.5 line-clamp-2 font-normal prose prose-sm max-w-none">
+                {parseCleanHtml(rawContent)}
+              </div>
             </div>
 
             {/* Time and actions */}

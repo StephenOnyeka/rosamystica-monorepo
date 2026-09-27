@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import DOMPurify from "dompurify";
+import parse from "html-react-parser";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -36,5 +37,24 @@ export function cleanHtmlContent(rawHtml: string | undefined | null): string {
     return DOMPurify.sanitize(decoded);
   }
   return decoded;
+}
+
+/** Strips ALL HTML tags and returns plain text — use for short descriptions / truncated previews. */
+export function stripHtmlTags(rawHtml: string | undefined | null): string {
+  if (!rawHtml) return "";
+  const sanitized = cleanHtmlContent(rawHtml);
+  if (typeof window !== "undefined") {
+    const div = document.createElement("div");
+    div.innerHTML = sanitized;
+    return div.textContent ?? div.innerText ?? "";
+  }
+  // Server-side fallback
+  return sanitized.replace(/<[^>]*>/g, "");
+}
+
+export function parseCleanHtml(rawHtml: string | undefined | null) {
+  if (!rawHtml) return null;
+  const cleanHtml = cleanHtmlContent(rawHtml);
+  return parse(cleanHtml);
 }
 

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useCallback, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { CgSpinner } from "react-icons/cg";
@@ -68,9 +68,14 @@ export function ThrottledButton({
         } finally {
           setInternalLoading(false);
         }
+      } else if (props.form && type === "submit") {
+        const targetForm = document.getElementById(props.form) as HTMLFormElement | null;
+        if (targetForm) {
+          targetForm.requestSubmit();
+        }
       }
     },
-    [onClick, throttleMs, isThrottled, internalLoading, externalLoading, disabled]
+    [onClick, throttleMs, isThrottled, internalLoading, externalLoading, disabled, props.form, type]
   );
 
   const showLoading = externalLoading || internalLoading;

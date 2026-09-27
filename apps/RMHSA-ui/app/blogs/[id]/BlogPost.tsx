@@ -1,10 +1,13 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/loading";
 import DOMPurify from "dompurify";
+import { Geist } from "next/font/google";
+
+const geist = Geist({ subsets: ["latin"] });
 import { formatDistanceToNow } from "date-fns";
 import type { Blog } from "@/lib/types";
 import { customFetch } from "@/lib/api";
@@ -123,7 +126,7 @@ export default function BlogPost({ id }: { id: string }) {
         <br />
         <br />
 
-        <div className="max-w-5xl mx-auto font-poppins">
+        <div className={`max-w-5xl mx-auto ${geist.className}`}>
           {/* Header Navigation Bar */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-x-4">
@@ -260,7 +263,7 @@ export default function BlogPost({ id }: { id: string }) {
                 <hr className="border-gray-200 mb-8" />
 
                 {/* Body — Tiptap ProseMirror styling with exact editor node stylesheets loaded */}
-                <div className="tiptap ProseMirror simple-editor text-gray-900 leading-relaxed font-poppins [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-6">
+                <div className={`tiptap ProseMirror simple-editor text-gray-900 leading-relaxed ${geist.className} [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-6`}>
                   <div
                     dangerouslySetInnerHTML={{
                       __html: DOMPurify.sanitize(blog.body, {

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, type SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -184,7 +184,7 @@ function BlogForm({
         <div>
           {preview ? (
             /* ── Enhanced Blog Preview Mode ── */
-            <div className="py-6 px-2 max-w-5xl mx-auto font-poppins">
+            <div className={`py-6 px-2 max-w-5xl mx-auto ${geist.className}`}>
               {/* Control Bar */}
               <div className="flex flex-wrap items-center justify-between gap-4 p-4 mb-6 bg-white border border-gray-200 rounded-xl shadow-sm">
                 <div className="flex items-center gap-3">
@@ -262,7 +262,7 @@ function BlogForm({
                   <hr className="border-gray-200 mb-8" />
 
                   {/* Body HTML Content with Tiptap ProseMirror styling */}
-                  <div className="tiptap ProseMirror simple-editor text-gray-900 leading-relaxed font-poppins [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-6">
+                  <div className={`tiptap ProseMirror simple-editor text-gray-900 leading-relaxed ${geist.className} [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-6`}>
                     <div
                       dangerouslySetInnerHTML={{
                         __html:
