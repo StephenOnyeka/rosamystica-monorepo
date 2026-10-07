@@ -15,7 +15,6 @@ import { NotificationBing } from "iconsax-reactjs";
 import { Geist } from "next/font/google";
 import { cleanHtmlContent, parseCleanHtml, stripHtmlTags } from "@/lib/utils";
 
-
 const geist = Geist({
   subsets: ["latin"],
 });
@@ -43,7 +42,8 @@ function NotificationForm({
   const [error, setError] = useState<string | null>(null);
   const [emptyFields, setEmptyFields] = useState<string[]>([]);
   const [internalPreview, setInternalPreview] = useState(false);
-  const preview = controlledIsPreview !== undefined ? controlledIsPreview : internalPreview;
+  const preview =
+    controlledIsPreview !== undefined ? controlledIsPreview : internalPreview;
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -81,7 +81,7 @@ function NotificationForm({
       title,
       desc: generatedDesc,
       body,
-      type: initialData?.type || "manual",
+      type: "manual",
     };
 
     if (isEditing && initialData) {
@@ -138,7 +138,11 @@ function NotificationForm({
   };
 
   return (
-    <form id="notification-form" onSubmit={handleSubmit} className={geist.className}>
+    <form
+      id="notification-form"
+      onSubmit={handleSubmit}
+      className={geist.className}
+    >
       {preview ? (
         /* ── Enhanced Notification Preview Mode ── */
         <div className="py-6 px-2 max-w-4xl mx-auto">
@@ -196,18 +200,23 @@ function NotificationForm({
                   {getPreviewText()}
                 </p>
 
-                {/* Clean rendered content preview with proper styling */}
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 prose prose-sm max-w-none">
-                  {parseCleanHtml(body)}
-                </div>
-
                 {/* Type badge */}
                 <div className="mt-4">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                    Manual Announcement
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      body
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-green-100 text-green-700"
+                    }`}
+                  >
+                    {body ? "Announcement (from Blog)" : "Manual Announcement"}
                   </span>
                 </div>
               </div>
+            </div>
+            {/* Clean rendered content preview with proper styling */}
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 prose prose-sm max-sm:prose-xs max-w-none">
+              {parseCleanHtml(body)}
             </div>
           </div>
         </div>

@@ -46,7 +46,7 @@ function BlogForm({
   const [coverImage, setCoverImage] = useState<string | null>(
     (initialData?.backgroundImage ||
       initialData?.coverImage ||
-      initialData?.image) as string | null
+      initialData?.image) as string | null,
   );
 
   useEffect(() => {
@@ -56,7 +56,7 @@ function BlogForm({
       setCoverImage(
         (initialData.backgroundImage ||
           initialData.coverImage ||
-          initialData.image) as string | null
+          initialData.image) as string | null,
       );
     }
   }, [initialData]);
@@ -131,7 +131,7 @@ function BlogForm({
         // Rollback edit on error
         dispatch({ type: "UPDATE_BLOG", payload: initialData });
         setError(
-          err instanceof Error ? err.message : "Failed to update blog post"
+          err instanceof Error ? err.message : "Failed to update blog post",
         );
       }
     } else {
@@ -167,7 +167,7 @@ function BlogForm({
       } catch (err: unknown) {
         dispatch({ type: "DELETE_BLOG", payload: optimisticBlog });
         setError(
-          err instanceof Error ? err.message : "Failed to create blog post"
+          err instanceof Error ? err.message : "Failed to create blog post",
         );
       }
     }
@@ -262,7 +262,9 @@ function BlogForm({
                   <hr className="border-gray-200 mb-8" />
 
                   {/* Body HTML Content with Tiptap ProseMirror styling */}
-                  <div className={`tiptap ProseMirror simple-editor text-gray-900 leading-relaxed ${geist.className} [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-6`}>
+                  <div
+                    className={`tiptap ProseMirror simple-editor text-gray-900 leading-relaxed ${geist.className} [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-6`}
+                  >
                     <div
                       dangerouslySetInnerHTML={{
                         __html:
@@ -346,7 +348,8 @@ function BlogForm({
                         Upload Cover / Background Image
                       </span>
                       <span className="text-xs text-gray-500 mt-1">
-                        Click to select a header background image (JPEG, PNG, WEBP)
+                        Click to select a header background image (JPEG, PNG,
+                        WEBP)
                       </span>
                       <input
                         type="file"
@@ -386,8 +389,8 @@ function BlogForm({
                 <div className="flex items-center gap-4 mb-8">
                   <ThrottledButton
                     type="submit"
-                    loadingText="Saving..."
-                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md"
+                    loadingText="Publishing..."
+                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md cursor-pointer"
                   >
                     <LuSend className="w-4 h-4" />
                     {actionButtonText}

@@ -76,7 +76,7 @@ export class NotificationsService {
   async createNotification(
     createNotificationDto: CreateNotificationDto,
   ): Promise<Notification> {
-    const { title, desc, body } = createNotificationDto;
+    const { title, desc, body, type } = createNotificationDto;
 
     try {
       // Add doc to db
@@ -84,6 +84,7 @@ export class NotificationsService {
         title,
         desc,
         body,
+        type,
       });
 
       // Fetch subscribers' emails
