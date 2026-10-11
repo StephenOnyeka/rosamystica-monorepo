@@ -1,6 +1,6 @@
 "use client";
 
-import { useNotificationsContext } from "@/hooks/useNotificationsContext";
+import { useDeleteNotification } from "@/lib/queries";
 import { IoIosCloseCircle } from "react-icons/io";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { LuPencil, LuTrash2 } from "react-icons/lu";
 
 const geist = Geist({ subsets: ["latin"] });
-import { NotificationBing, Note, Edit } from "iconsax-reactjs";
+import { NotificationBing, Note, Edit, DocumentText } from "iconsax-reactjs";
 
 interface NotificationsDetailsProps {
   notification: Notification;
@@ -27,7 +27,7 @@ function NotificationsDetails({
   onSelect,
   onEdit,
 }: NotificationsDetailsProps) {
-  const { dispatch } = useNotificationsContext();
+  const deleteNotification = useDeleteNotification();
   const { isAdmin } = useAdminContext();
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const flyoutRef = useRef<HTMLDivElement>(null);
@@ -39,19 +39,12 @@ function NotificationsDetails({
   const isPushedBlog = notification.type === "blog" || !!relatedBlogId;
   const blogUrl = `/blogs/${relatedBlogId || notifId}`;
 
-  const handleDelete = async (e: React.MouseEvent) => {
+  const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    try {
-      const json = await customFetch<Notification>(
-        `/api/notifications/${notifId}`,
-        {
-          method: "DELETE",
-        },
-      );
-      dispatch({ type: "DELETE_NOTIFICATION", payload: json });
-    } catch (error) {
-      console.error("Failed to delete notification:", error);
-    }
+    deleteNotification.mutate(notifId, {
+      onError: (error) =>
+        console.error("Failed to delete notification:", error),
+    });
   };
 
   const handleCardClick = () => {
@@ -130,7 +123,7 @@ function NotificationsDetails({
             }`}
           >
             {isPushedBlog ? (
-              <Note size="24" variant="Bold" />
+              <DocumentText size="24" variant="Bold" />
             ) : (
               <NotificationBing size="24" variant="Bold" />
             )}

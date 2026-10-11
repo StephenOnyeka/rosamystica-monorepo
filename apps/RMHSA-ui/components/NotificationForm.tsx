@@ -5,7 +5,7 @@ import { useState, useEffect, type SyntheticEvent } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import "react-quill-new/dist/quill.bubble.css";
-import { useNotificationsContext } from "@/hooks/useNotificationsContext";
+import { useSaveNotification } from "@/lib/queries";
 import type { Notification } from "@/lib/types";
 
 import { customFetch } from "@/lib/api";
@@ -35,7 +35,7 @@ function NotificationForm({
   onTogglePreview,
 }: NotificationFormProps) {
   const isEditing = Boolean(initialData && (initialData.id || initialData._id));
-  const { dispatch } = useNotificationsContext();
+  const saveNotification = useSaveNotification();
   const [title, setTitle] = useState(initialData?.title ?? "");
   const [desc, setDesc] = useState(initialData?.desc ?? "");
   const [body, setBody] = useState(initialData?.body ?? "");
@@ -84,40 +84,29 @@ function NotificationForm({
       type: "manual",
     };
 
-    if (isEditing && initialData) {
-      const targetId = initialData.id || initialData._id || "";
-      try {
-        const json = await customFetch<Notification>(
-          `/api/notifications/${targetId}`,
-          {
-            method: "PATCH",
-            body: JSON.stringify(notificationPayload),
-            token: token ?? undefined,
-          },
-        );
-        setError(null);
-        dispatch({ type: "UPDATE_NOTIFICATION", payload: json });
-        onClose?.();
-      } catch (err: any) {
-        setError(err.message || "Failed to update notification");
-      }
-    } else {
-      try {
-        const json = await customFetch<Notification>("/api/notifications", {
-          method: "POST",
-          body: JSON.stringify(notificationPayload),
-          token: token ?? undefined,
-        });
+    const targetId = isEditing
+      ? initialData?.id || initialData?._id || ""
+      : undefined;
+    try {
+      await saveNotification.mutateAsync({
+        id: targetId,
+        payload: notificationPayload,
+      });
+      setError(null);
+      if (!isEditing) {
         setTitle("");
         setDesc("");
         setBody("");
-        setError(null);
         setEmptyFields([]);
-        dispatch({ type: "CREATE_NOTIFICATION", payload: json });
-        onClose?.();
-      } catch (err: any) {
-        setError(err.message || "Failed to create notification");
       }
+      onClose?.();
+    } catch (err: any) {
+      setError(
+        err.message ||
+          (isEditing
+            ? "Failed to update notification"
+            : "Failed to create notification"),
+      );
     }
   };
 

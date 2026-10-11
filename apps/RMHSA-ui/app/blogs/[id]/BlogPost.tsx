@@ -27,7 +27,7 @@ import Topfile from "@/components/Topfile";
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
 import { useAdminContext } from "@/hooks/useAdminContext";
-import { useBlogsContext } from "@/hooks/useBlogsContext";
+import { useBlog, useDeleteBlog } from "@/lib/queries";
 
 // Import Tiptap ProseMirror node styles to guarantee exact spacing, images, lists, and formatting as in the editor
 import "@/components/tiptap-node/blockquote-node/blockquote-node.scss";
@@ -40,30 +40,18 @@ import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 import "@/components/tiptap-templates/simple/simple-editor.scss";
 
 export default function BlogPost({ id }: { id: string }) {
-  const [blog, setBlog] = useState<Blog | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { data: blog = null, isPending: loading, error: queryError } = useBlog(id);
+  const error = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : String(queryError)
+    : "";
   const [copied, setCopied] = useState(false);
   const { isAdmin } = useAdminContext();
-  const { dispatch } = useBlogsContext();
+  const deleteBlog = useDeleteBlog();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchBlog = async () => {
-      try {
-        const data = await customFetch<Blog>(`/api/blogs/${id}`);
-        setBlog(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBlog();
-  }, [id]);
-
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (
       !blog ||
       !window.confirm("Are you sure you want to delete this blog post?")
@@ -71,22 +59,10 @@ export default function BlogPost({ id }: { id: string }) {
       return;
 
     const blogId = blog.id || blog._id || id;
-    const targetBlog = blog;
-
-    // 1. Optimistic UI update — immediately delete from context & navigate
-    dispatch({ type: "DELETE_BLOG", payload: targetBlog });
-    router.push("/blogs");
-
-    try {
-      // 2. Perform background server delete
-      await customFetch<Blog>(`/api/blogs/${blogId}`, {
-        method: "DELETE",
-      });
-    } catch (err) {
-      console.error("Failed to delete blog:", err);
-      // 3. Rollback state if server deletion fails
-      dispatch({ type: "CREATE_BLOG", payload: targetBlog });
-    }
+    deleteBlog.mutate(blogId, {
+      onSuccess: () => router.push("/blogs"),
+      onError: (err) => console.error("Failed to delete blog:", err),
+    });
   };
 
   const handleShare = () => {

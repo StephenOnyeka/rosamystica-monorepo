@@ -13,6 +13,7 @@ import {
   UpdateNotificationDto,
 } from './dto/notifications.dto';
 import { Notification } from './entities/notification.entity';
+import { Blog } from '../blogs/entities/blog.entity';
 
 export interface PaginatedNotifications {
   notifications: Notification[];
@@ -72,11 +73,33 @@ export class NotificationsService {
     return notification;
   }
 
+  // Called when a blog is published: records a "blog" notification linked to
+  // the blog and sends the ONE subscriber email (blog-styled, with cover image
+  // and a link to the article).
+  async createFromBlog(blog: Blog): Promise<Notification> {
+    const notification = await this.notificationRepository.save({
+      title: blog.title,
+      desc: blog.desc || blog.title.substring(0, 100),
+      body: blog.body,
+      type: 'blog',
+      relatedBlogId: blog.id,
+    });
+
+    const subscribers = await this.subscribeRepository.find();
+    const subscriberEmails = subscribers
+      .map((sub) => sub.email)
+      .filter((email): email is string => !!email);
+
+    await this.mailService.sendBlogNotification(subscriberEmails, blog);
+
+    return notification;
+  }
+
   // Ported from notificationController.js: createNotification.
   async createNotification(
     createNotificationDto: CreateNotificationDto,
   ): Promise<Notification> {
-    const { title, desc, body, type } = createNotificationDto;
+    const { title, desc, body, type, relatedBlogId } = createNotificationDto;
 
     try {
       // Add doc to db
@@ -85,6 +108,7 @@ export class NotificationsService {
         desc,
         body,
         type,
+        relatedBlogId,
       });
 
       // Fetch subscribers' emails

@@ -1,6 +1,8 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
+import { useBlogs } from "@/lib/queries";
+import { useAdminContext } from "@/hooks/useAdminContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AddCircle } from "iconsax-reactjs";
@@ -10,47 +12,20 @@ import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
 import BlogsDetails from "@/components/BlogsDetails";
 import Loading from "@/components/loading";
-import { useBlogsContext } from "@/hooks/useBlogsContext";
-import { useAdminContext } from "@/hooks/useAdminContext";
-import type { Blog } from "@/lib/types";
-import { customFetch } from "@/lib/api";
-
-interface BlogsApiResponse {
-  blogs: Blog[];
-  totalPosts: number;
-  totalPages: number;
-}
 
 function BlogsContent() {
-  const { blogs, dispatch } = useBlogsContext();
   const { isAdmin } = useAdminContext();
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
   const page = searchParams?.get("page") ?? "1";
   const currentPage = Number(page) || 1; // Ensure page is a number
-  const [totalPages, setTotalPages] = useState(0);
   const postsPerPage = 5;
 
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const data = await customFetch<BlogsApiResponse>(
-          `/api/blogs?page=${currentPage}&limit=${postsPerPage}`,
-        );
-        setTotalPages(data.totalPages);
-        dispatch({ type: "SET_BLOGS", payload: data.blogs });
-      } catch (error) {
-        console.error("Failed to fetch blogs:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data, isPending } = useBlogs(currentPage, postsPerPage);
+  const blogs = data?.blogs;
+  const totalPages = data?.totalPages ?? 0;
 
-    fetchBlogs();
-  }, [dispatch, currentPage]); // Use currentPage here
-
-  if (loading) return <Loading />;
+  if (isPending) return <Loading />;
 
   return (
     <div>

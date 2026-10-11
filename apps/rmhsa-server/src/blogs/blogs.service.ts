@@ -1,16 +1,15 @@
 import {
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MailService } from '../mail/mail.service';
-import { Subscribe } from '../subscriptions/entities/subscribe.entity';
 import { CreateBlogDto, UpdateBlogDto } from './dto/blogs.dto';
 import { Blog } from './entities/blog.entity';
-import { BlogNotificationService } from './blog-notification.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 export interface PaginatedBlogs {
   blogs: Blog[];
@@ -20,13 +19,12 @@ export interface PaginatedBlogs {
 
 @Injectable()
 export class BlogsService {
+  private readonly logger = new Logger(BlogsService.name);
+
   constructor(
     @InjectRepository(Blog)
     private readonly blogRepository: Repository<Blog>,
-    @InjectRepository(Subscribe)
-    private readonly subscribeRepository: Repository<Subscribe>,
-    private readonly mailService: MailService,
-    private readonly blogNotificationService: BlogNotificationService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   // Ported from blogController.js: getBlogs (paginated list).
@@ -84,17 +82,15 @@ export class BlogsService {
         backgroundImage: imgVal,
       });
 
-      // Fetch subscribers' emails
-      const subscribers = await this.subscribeRepository.find();
-      const subscriberEmails = subscribers
-        .map((sub) => sub.email)
-        .filter((email): email is string => !!email);
-
-      // Send email notification
-      await this.mailService.sendBlogNotification(subscriberEmails, blog);
-
-      // Create notification for the new blog via API call
-      await this.blogNotificationService.createNotificationFromBlog(blog);
+      // Publishing a blog adds it to the notifications and sends the single
+      // subscriber email. Failures here must not undo the published blog.
+      try {
+        await this.notificationsService.createFromBlog(blog);
+      } catch (error) {
+        this.logger.error(
+          `Failed to create notification for blog ${blog.id}: ${String(error)}`,
+        );
+      }
 
       return blog;
     } catch {

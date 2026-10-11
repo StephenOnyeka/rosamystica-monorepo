@@ -10,10 +10,9 @@ import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
 import NotificationsDetails from "@/components/NotificationDetail";
 import Loading from "@/components/loading";
-import { useNotificationsContext } from "@/hooks/useNotificationsContext";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Notification } from "@/lib/types";
-import { customFetch } from "@/lib/api";
+import { useBlogs, useNotifications } from "@/lib/queries";
 import Modal from "@/components/Modal";
 import NotificationDetailModal from "@/components/NotificationDetailModal";
 import { ThrottledButton } from "@/components/ThrottledButton";
@@ -26,24 +25,26 @@ const NotificationForm = dynamic(
   { ssr: false },
 );
 
-interface NotificationsApiResponse {
-  notifications: Notification[];
-  totalPosts: number;
-  totalPages: number;
-}
 
 function NotificationsContent() {
-  const { notifications, dispatch } = useNotificationsContext();
   const { isAdmin } = useAdminContext();
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
   const page = searchParams?.get("page") ?? "1";
   const selectedId = searchParams?.get("id");
   const currentPage = Number(page) || 1;
-  const [totalPages, setTotalPages] = useState(0);
   const postsPerPage = 5;
   const [filterType, setFilterType] = useState<string | null>(null);
+
+  const { data: notificationsData, isPending } = useNotifications(
+    currentPage,
+    postsPerPage,
+  );
+  const notifications = notificationsData?.notifications;
+  const totalPages = notificationsData?.totalPages ?? 0;
+  // Published blogs so new articles show up by default
+  const { data: blogsData } = useBlogs(currentPage, postsPerPage);
+  const blogs = blogsData?.blogs ?? [];
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -71,44 +72,34 @@ function NotificationsContent() {
     }
   }, [selectedId, notifications]);
 
-  // Fetch notifications
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const data = await customFetch<NotificationsApiResponse>(
-          `/api/notifications?page=${currentPage}&limit=${postsPerPage}`,
-        );
-        setTotalPages(data.totalPages);
-        dispatch({ type: "SET_NOTIFICATIONS", payload: data.notifications });
-      } catch (error) {
-        console.error(
-          "Failed to fetch notifications, using dummy data:",
-          error,
-        );
-        const dummyData: NotificationsApiResponse = {
-          notifications: [],
-          totalPosts: 0,
-          totalPages: 1,
-        };
-        setTotalPages(1);
-        dispatch({
-          type: "SET_NOTIFICATIONS",
-          payload: dummyData.notifications,
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (isPending) return <Loading />;
 
-    fetchNotifications();
-  }, [dispatch, currentPage]);
+  // Blogs that have no corresponding blog notification yet
+  const coveredBlogIds = new Set(
+    (notifications || [])
+      .map((n) => (n.relatedBlogId || n.blogId) as string | undefined)
+      .filter(Boolean),
+  );
+  const blogNotifications: Notification[] = blogs
+    .filter((b) => b.id && !coveredBlogIds.has(b.id))
+    .map((b) => ({
+      id: `blog-${b.id}`,
+      title: b.title,
+      desc: b.desc,
+      body: b.body,
+      type: "blog",
+      relatedBlogId: b.id,
+      createdAt: b.createdAt,
+    }));
 
-  if (loading) return <Loading />;
+  const allNotifications = [...(notifications || []), ...blogNotifications].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 
   // Filter notifications based on selected type
   const filteredNotifications = filterType
-    ? notifications?.filter((n) => n.type === filterType) || []
-    : notifications || [];
+    ? allNotifications.filter((n) => n.type === filterType)
+    : allNotifications;
 
   return (
     <div className="pb-0">

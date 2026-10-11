@@ -2,7 +2,7 @@
 
 import { useState, useEffect, type SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
-import { useBlogsContext } from "@/hooks/useBlogsContext";
+import { useCreateBlog, useUpdateBlog } from "@/lib/queries";
 import type { Blog } from "@/lib/types";
 import { Geist } from "next/font/google";
 import { customFetch } from "@/lib/api";
@@ -64,7 +64,8 @@ function BlogForm({
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
   const [token] = useState<string | null>(() => localStorage.getItem("token"));
-  const { dispatch } = useBlogsContext();
+  const createBlog = useCreateBlog();
+  const updateBlog = useUpdateBlog();
   const router = useRouter();
 
   const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,65 +108,24 @@ function BlogForm({
 
     if (isEditing && initialData) {
       const targetId = initialData.id || initialData._id || "";
-      const updatedOptimistic: Blog = {
-        ...initialData,
-        ...blogPayload,
-      };
-
-      // 1. Optimistic UI update for Edit
-      dispatch({ type: "UPDATE_BLOG", payload: updatedOptimistic });
       setError(null);
-
-      if (redirectAfterSubmit) {
-        router.push(redirectAfterSubmit);
-      }
-
       try {
-        const json = await customFetch<Blog>(`/api/blogs/${targetId}`, {
-          method: "PATCH",
-          body: JSON.stringify(blogPayload),
-          token: token ?? undefined,
-        });
-        dispatch({ type: "UPDATE_BLOG", payload: json });
+        await updateBlog.mutateAsync({ id: targetId, payload: blogPayload });
+        if (redirectAfterSubmit) router.push(redirectAfterSubmit);
       } catch (err: unknown) {
-        // Rollback edit on error
-        dispatch({ type: "UPDATE_BLOG", payload: initialData });
         setError(
           err instanceof Error ? err.message : "Failed to update blog post",
         );
       }
     } else {
-      // Creation flow
-      const tempId = `temp-${Date.now()}`;
-      const optimisticBlog: Blog = {
-        id: tempId,
-        _id: tempId,
-        ...blogPayload,
-        createdAt: new Date().toISOString(),
-      };
-
-      // 1. Optimistic UI add
-      dispatch({ type: "CREATE_BLOG", payload: optimisticBlog });
-
-      setTitle("");
-      setBody("");
-      setCoverImage(null);
       setError(null);
-
-      if (redirectAfterSubmit) {
-        router.push(redirectAfterSubmit);
-      }
-
       try {
-        const json = await customFetch<Blog>("/api/blogs", {
-          method: "POST",
-          body: JSON.stringify(blogPayload),
-          token: token ?? undefined,
-        });
-        dispatch({ type: "DELETE_BLOG", payload: optimisticBlog });
-        dispatch({ type: "CREATE_BLOG", payload: json });
+        await createBlog.mutateAsync(blogPayload);
+        setTitle("");
+        setBody("");
+        setCoverImage(null);
+        if (redirectAfterSubmit) router.push(redirectAfterSubmit);
       } catch (err: unknown) {
-        dispatch({ type: "DELETE_BLOG", payload: optimisticBlog });
         setError(
           err instanceof Error ? err.message : "Failed to create blog post",
         );

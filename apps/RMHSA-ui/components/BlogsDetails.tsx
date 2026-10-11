@@ -1,9 +1,9 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { useBlogsContext } from "@/hooks/useBlogsContext";
+import { useDeleteBlog } from "@/lib/queries";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Blog } from "@/lib/types";
 import { customFetch } from "@/lib/api";
@@ -24,25 +24,16 @@ interface BlogsDetailsProps {
 }
 
 function BlogsDetails({ blog }: BlogsDetailsProps) {
-  const { dispatch } = useBlogsContext();
+  const deleteBlog = useDeleteBlog();
   const { isAdmin } = useAdminContext();
   const [copied, setCopied] = useState(false);
 
   const blogId = blog.id || blog._id || "";
 
-  const handleDelete = async () => {
-    // Optimistically remove from state
-    dispatch({ type: "DELETE_BLOG", payload: blog });
-
-    try {
-      await customFetch<Blog>(`/api/blogs/${blogId}`, {
-        method: "DELETE",
-      });
-    } catch (error) {
-      console.error("Failed to delete blog:", error);
-      // Rollback on failure
-      dispatch({ type: "CREATE_BLOG", payload: blog });
-    }
+  const handleDelete = () => {
+    deleteBlog.mutate(blogId, {
+      onError: (error) => console.error("Failed to delete blog:", error),
+    });
   };
 
   const handleShare = (e: React.MouseEvent) => {
