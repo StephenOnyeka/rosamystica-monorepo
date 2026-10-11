@@ -21,9 +21,22 @@ async function bootstrap() {
     }),
   );
 
-  // Mirror the original Express middleware stack: open CORS, 200mb body
-  // limits, then a request logger (path + method).
-  app.enableCors();
+  // Open CORS with credentials for httpOnly cookie support
+  app.enableCors({
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('https://localhost:') ||
+        (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL)
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
+    credentials: true,
+  });
   app.use(json({ limit: '200mb' }));
   app.use(urlencoded({ limit: '200mb', extended: true }));
   app.use((req: Request, _res: Response, next: NextFunction) => {

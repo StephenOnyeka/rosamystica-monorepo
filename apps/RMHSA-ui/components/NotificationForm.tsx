@@ -25,6 +25,7 @@ interface NotificationFormProps {
   hideFooterButtons?: boolean;
   isPreview?: boolean;
   onTogglePreview?: () => void;
+  onSavingChange?: (isSaving: boolean) => void;
 }
 
 function NotificationForm({
@@ -33,9 +34,11 @@ function NotificationForm({
   hideFooterButtons = false,
   isPreview: controlledIsPreview,
   onTogglePreview,
+  onSavingChange,
 }: NotificationFormProps) {
   const isEditing = Boolean(initialData && (initialData.id || initialData._id));
   const saveNotification = useSaveNotification();
+  const isSaving = saveNotification.isPending;
   const [title, setTitle] = useState(initialData?.title ?? "");
   const [desc, setDesc] = useState(initialData?.desc ?? "");
   const [body, setBody] = useState(initialData?.body ?? "");
@@ -44,13 +47,9 @@ function NotificationForm({
   const [internalPreview, setInternalPreview] = useState(false);
   const preview =
     controlledIsPreview !== undefined ? controlledIsPreview : internalPreview;
-  const [token, setToken] = useState<string | null>(null);
-
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setToken(localStorage.getItem("token"));
-    }
-  }, []);
+    onSavingChange?.(isSaving);
+  }, [isSaving, onSavingChange]);
 
   useEffect(() => {
     if (initialData) {
@@ -64,6 +63,8 @@ function NotificationForm({
     e?: SyntheticEvent<HTMLFormElement | HTMLButtonElement>,
   ) => {
     e?.preventDefault();
+
+    if (isSaving) return;
 
     if (!title.trim()) {
       setError("Please enter a title for your notification.");
@@ -157,13 +158,14 @@ function NotificationForm({
                   Back to Edit
                 </button>
                 <ThrottledButton
-                  type="submit"
+                  type="button"
                   onClick={handleSubmit}
-                  loadingText="Publishing..."
+                  isLoading={isSaving}
+                  loadingText={isEditing ? "Updating..." : "Publishing..."}
                   className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-sm"
                 >
                   <LuCheck className="w-4 h-4" />
-                  Publish Notification
+                  {isEditing ? "Update Notification" : "Publish Notification"}
                 </ThrottledButton>
               </div>
             </div>
@@ -268,7 +270,9 @@ function NotificationForm({
             {!hideFooterButtons && (
               <div className="flex items-center gap-4 mb-8">
                 <ThrottledButton
-                  type="submit"
+                  type="button"
+                  onClick={handleSubmit}
+                  isLoading={isSaving}
                   loadingText={isEditing ? "Updating..." : "Publishing..."}
                   className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md"
                 >

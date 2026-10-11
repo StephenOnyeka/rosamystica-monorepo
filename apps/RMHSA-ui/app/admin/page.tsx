@@ -21,12 +21,11 @@ export default function Admin() {
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const data = await customFetch<{ token: string }>("/api/admin/login", {
+      await customFetch("/api/admin/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
-      localStorage.setItem("token", data.token);
-      await verifyAdmin(data.token);
+      await verifyAdmin();
       router.push("/");
     } catch (err: any) {
       setError(err.message || "Login failed");
@@ -38,11 +37,9 @@ export default function Admin() {
       await customFetch("/api/admin/logout", {
         method: "POST",
       });
-      localStorage.removeItem("token");
-      signOut();
     } catch (error) {
       console.error("Logout error:", error);
-      localStorage.removeItem("token");
+    } finally {
       signOut();
     }
   };

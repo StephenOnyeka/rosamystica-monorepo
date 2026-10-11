@@ -12,7 +12,7 @@ import { customFetch } from "../lib/api";
 
 export interface AdminContextValue {
   isAdmin: boolean;
-  verifyAdmin: (token: string) => Promise<void>;
+  verifyAdmin: (token?: string) => Promise<void>;
   signOut: () => void;
 }
 
@@ -21,11 +21,11 @@ const AdminContext = createContext<AdminContextValue | null>(null);
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const verifyAdmin = async (token: string) => {
+  const verifyAdmin = async (tokenOverride?: string) => {
     try {
       await customFetch("/api/admin/verify", {
         method: "GET",
-        token,
+        token: tokenOverride,
         skipCache: true,
       });
       setIsAdmin(true);
@@ -39,16 +39,12 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (!storedToken) return;
-
     let active = true;
 
     const verify = async () => {
       try {
         await customFetch("/api/admin/verify", {
           method: "GET",
-          token: storedToken,
           skipCache: true,
         });
         if (active) setIsAdmin(true);

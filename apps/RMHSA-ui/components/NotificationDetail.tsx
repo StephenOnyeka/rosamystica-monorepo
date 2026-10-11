@@ -12,6 +12,7 @@ import { Geist } from "next/font/google";
 import { SlOptions, SlOptionsVertical } from "react-icons/sl";
 import { useEffect, useRef, useState } from "react";
 import { LuPencil, LuTrash2 } from "react-icons/lu";
+import { ThrottledButton } from "@/components/ThrottledButton";
 
 const geist = Geist({ subsets: ["latin"] });
 import { NotificationBing, Note, Edit, DocumentText } from "iconsax-reactjs";
@@ -41,6 +42,7 @@ function NotificationsDetails({
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (deleteNotification.isPending) return;
     deleteNotification.mutate(notifId, {
       onError: (error) =>
         console.error("Failed to delete notification:", error),
@@ -196,18 +198,20 @@ function NotificationsDetails({
                           Edit
                         </button>
                       )}
-                      <button
+                      <ThrottledButton
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           setIsOptionsOpen(false);
                           handleDelete(e);
                         }}
+                        isLoading={deleteNotification.isPending}
+                        loadingText="Deleting..."
                         className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
                       >
                         <LuTrash2 className="w-3.5 h-3.5" />
                         Delete
-                      </button>
+                      </ThrottledButton>
                     </div>
                   )}
                 </div>

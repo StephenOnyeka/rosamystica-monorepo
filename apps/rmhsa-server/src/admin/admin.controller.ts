@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -12,6 +13,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { AdminService } from './admin.service';
 import { LoginDto } from './dto/admin.dto';
 import { AdminAuthGuard } from './guards/admin-auth.guard';
@@ -26,11 +28,22 @@ export class AdminController {
   @ApiOperation({ summary: 'Authenticate admin user and receive JWT token' })
   @ApiResponse({
     status: 200,
-    description: 'Login successful. Return JWT token.',
+    description: 'Login successful. Sets httpOnly token cookie.',
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials.' })
-  login(@Body() loginDto: LoginDto): Promise<{ token: string }> {
-    return this.adminService.login(loginDto);
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ message: string; token: string }> {
+    const { token } = await this.adminService.login(loginDto);
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/',
+    });
+    return { message: 'Login successful', token };
   }
 
   // Token verification mirrors the legacy GET /api/admin/verify route.
@@ -40,15 +53,21 @@ export class AdminController {
   @ApiOperation({ summary: 'Verify JWT token validity' })
   @ApiResponse({ status: 200, description: 'Token is valid' })
   @ApiResponse({ status: 401, description: 'Invalid or expired token.' })
-  verify(): { message: string } {
-    return { message: 'Token is valid' };
+  verify(): { message: string; authenticated: true } {
+    return { message: 'Token is valid', authenticated: true };
   }
 
   @Post('logout')
   @HttpCode(200)
   @ApiOperation({ summary: 'Logout admin user' })
   @ApiResponse({ status: 200, description: 'Logout successful.' })
-  logout(): { message: string } {
+  logout(@Res({ passthrough: true }) res: Response): { message: string } {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      path: '/',
+    });
     return this.adminService.logout();
   }
 }

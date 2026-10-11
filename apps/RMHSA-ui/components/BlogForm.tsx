@@ -9,6 +9,7 @@ import { Geist } from "next/font/google";
 import { customFetch } from "@/lib/api";
 import { SimpleEditor } from "./tiptap-templates/simple/simple-editor";
 import { ThrottledButton } from "@/components/ThrottledButton";
+import { useAdminContext } from "@/hooks/useAdminContext";
 import {
   LuImagePlus,
   LuImage,
@@ -64,9 +65,10 @@ function BlogForm({
 
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
-  const [token] = useState<string | null>(() => localStorage.getItem("token"));
+  const { isAdmin } = useAdminContext();
   const createBlog = useCreateBlog();
   const updateBlog = useUpdateBlog();
+  const isSaving = createBlog.isPending || updateBlog.isPending;
   const router = useRouter();
 
   const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,6 +95,7 @@ function BlogForm({
     e?: SyntheticEvent<HTMLFormElement | HTMLButtonElement>,
   ) => {
     if (e) e.preventDefault();
+    if (isSaving) return;
     if (!title.trim()) {
       setError("Please enter a title for your blog post.");
       return;
@@ -148,7 +151,7 @@ function BlogForm({
 
   return (
     <div className={geist.className}>
-      {token && (
+      {isAdmin && (
         <div>
           {preview ? (
             /* ── Enhanced Blog Preview Mode ── */
@@ -176,6 +179,7 @@ function BlogForm({
                   <ThrottledButton
                     type="button"
                     onClick={handleSubmit}
+                    isLoading={isSaving}
                     loadingText={isEditing ? "Saving..." : "Publishing..."}
                     className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-sm"
                   >
@@ -256,6 +260,7 @@ function BlogForm({
                   <ThrottledButton
                     type="button"
                     onClick={handleSubmit}
+                    isLoading={isSaving}
                     loadingText={isEditing ? "Saving..." : "Publishing..."}
                     className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md"
                   >
@@ -358,12 +363,22 @@ function BlogForm({
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-4 mb-8">
+                  <ThrottledButton
+                    type="button"
+                    onClick={handleSubmit}
+                    isLoading={isSaving}
+                    loadingText={isEditing ? "Saving..." : "Publishing..."}
+                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md cursor-pointer transition-all"
+                  >
+                    <LuSend className="w-4 h-4" />
+                    {actionButtonText}
+                  </ThrottledButton>
                   <button
                     type="button"
-                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md cursor-pointer transition-all"
+                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all cursor-pointer"
                     onClick={handlePreviewToggle}
                   >
-                    <LuEye className="w-4 h-4" />
+                    <LuEye className="w-4 h-4 text-contingent" />
                     Preview
                   </button>
                 </div>

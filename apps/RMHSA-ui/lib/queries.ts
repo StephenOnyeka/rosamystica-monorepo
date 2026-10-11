@@ -21,11 +21,6 @@ export const queryKeys = {
     ["notifications", "list", page, limit] as const,
 };
 
-const getToken = () =>
-  typeof window !== "undefined"
-    ? (localStorage.getItem("token") ?? undefined)
-    : undefined;
-
 // ---- Blogs -----------------------------------------------------------------
 export interface BlogsResponse {
   blogs: Blog[];
@@ -51,11 +46,11 @@ export const useBlog = (id: string) =>
 export const useCreateBlog = () => {
   const qc = useQueryClient();
   return useMutation({
+    mutationKey: ["blogs", "create"],
     mutationFn: (payload: Partial<Blog>) =>
       customFetch<Blog>("/api/blogs", {
         method: "POST",
         body: JSON.stringify(payload),
-        token: getToken(),
       }),
     onMutate: async (payload) => {
       await qc.cancelQueries({ queryKey: queryKeys.blogs });
@@ -110,11 +105,11 @@ export const useCreateBlog = () => {
 export const useUpdateBlog = () => {
   const qc = useQueryClient();
   return useMutation({
+    mutationKey: ["blogs", "update"],
     mutationFn: ({ id, payload }: { id: string; payload: Partial<Blog> }) =>
       customFetch<Blog>(`/api/blogs/${id}`, {
         method: "PATCH",
         body: JSON.stringify(payload),
-        token: getToken(),
       }),
     onMutate: async ({ id, payload }) => {
       await qc.cancelQueries({ queryKey: queryKeys.blogs });
@@ -155,6 +150,7 @@ export const useUpdateBlog = () => {
 export const useDeleteBlog = () => {
   const qc = useQueryClient();
   return useMutation({
+    mutationKey: ["blogs", "delete"],
     mutationFn: (id: string) =>
       customFetch<Blog>(`/api/blogs/${id}`, { method: "DELETE" }),
     onMutate: async (id) => {
@@ -207,6 +203,7 @@ export const useNotifications = (page: number, limit: number) =>
 export const useSaveNotification = () => {
   const qc = useQueryClient();
   return useMutation({
+    mutationKey: ["notifications", "save"],
     mutationFn: ({
       id,
       payload,
@@ -219,7 +216,6 @@ export const useSaveNotification = () => {
         {
           method: id ? "PATCH" : "POST",
           body: JSON.stringify(payload),
-          token: getToken(),
         },
       ),
     onMutate: async ({ id, payload }) => {
@@ -300,6 +296,7 @@ export const useSaveNotification = () => {
 export const useDeleteNotification = () => {
   const qc = useQueryClient();
   return useMutation({
+    mutationKey: ["notifications", "delete"],
     mutationFn: (id: string) =>
       customFetch<Notification>(`/api/notifications/${id}`, {
         method: "DELETE",

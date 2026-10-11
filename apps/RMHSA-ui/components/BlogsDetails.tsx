@@ -31,6 +31,7 @@ function BlogsDetails({ blog }: BlogsDetailsProps) {
   const blogId = blog.id || blog._id || "";
 
   const handleDelete = () => {
+    if (deleteBlog.isPending) return;
     deleteBlog.mutate(blogId, {
       onError: (error) => console.error("Failed to delete blog:", error),
     });
@@ -189,6 +190,7 @@ function BlogsDetails({ blog }: BlogsDetailsProps) {
                   type="button"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 hover:text-white bg-red-50 hover:bg-red-500 rounded-lg transition-all border border-red-100"
                   onClick={handleDelete}
+                  isLoading={deleteBlog.isPending}
                   loadingText="Deleting..."
                   title="Delete Article"
                 >

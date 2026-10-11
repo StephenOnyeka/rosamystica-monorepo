@@ -14,7 +14,11 @@ export class AdminAuthGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
-    const token = request.headers.authorization?.split(' ')[1];
+    const cookieToken =
+      (request as any).cookies?.token ||
+      this.extractCookie(request.headers.cookie, 'token');
+    const bearerToken = request.headers.authorization?.split(' ')[1];
+    const token = cookieToken || bearerToken;
 
     if (!token) {
       throw new UnauthorizedException({ error: 'Unauthorized' });
@@ -32,5 +36,14 @@ export class AdminAuthGuard implements CanActivate {
     }
 
     return true;
+  }
+
+  private extractCookie(
+    cookieHeader?: string,
+    name: string = 'token',
+  ): string | null {
+    if (!cookieHeader) return null;
+    const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+    return match ? decodeURIComponent(match[1]) : null;
   }
 }

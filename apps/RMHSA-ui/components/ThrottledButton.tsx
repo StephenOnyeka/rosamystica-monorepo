@@ -4,6 +4,7 @@ import {
   useState,
   useRef,
   useCallback,
+  useEffect,
   type ButtonHTMLAttributes,
   type ReactNode,
 } from "react";
@@ -37,6 +38,12 @@ export function ThrottledButton({
   const [isThrottled, setIsThrottled] = useState(false);
   const lastClickRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const handleClick = useCallback(
     async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -75,6 +82,7 @@ export function ThrottledButton({
           setInternalLoading(false);
         }
       } else if (props.form && type === "submit") {
+        e.preventDefault();
         const targetForm = document.getElementById(
           props.form,
         ) as HTMLFormElement | null;

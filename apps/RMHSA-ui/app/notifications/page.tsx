@@ -13,6 +13,7 @@ import Loading from "@/components/loading";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Notification } from "@/lib/types";
 import { useNotifications } from "@/lib/queries";
+import { useIsMutating } from "@tanstack/react-query";
 import Modal from "@/components/Modal";
 import NotificationDetailModal from "@/components/NotificationDetailModal";
 import { ThrottledButton } from "@/components/ThrottledButton";
@@ -49,11 +50,16 @@ function NotificationsContent() {
   const [selectedNotification, setSelectedNotification] =
     useState<Notification | null>(null);
   const [isPreview, setIsPreview] = useState(false);
+  const [isSavingNotification, setIsSavingNotification] = useState(false);
+  const isMutatingNotification =
+    useIsMutating({ mutationKey: ["notifications", "save"] }) > 0;
+  const isNotificationSaving = isSavingNotification || isMutatingNotification;
 
   const handleCloseModal = () => {
     setIsCreateModalOpen(false);
     setEditingNotification(null);
     setIsPreview(false);
+    setIsSavingNotification(false);
   };
 
   // Deep-linking handle for ?id= query param
@@ -248,6 +254,9 @@ function NotificationsContent() {
               <ThrottledButton
                 type="submit"
                 form="notification-form"
+                isLoading={isNotificationSaving}
+                loadingText={editingNotification ? "Updating..." : "Publishing..."}
+                disabled={isNotificationSaving}
                 className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-xl shadow-md transition-all cursor-pointer"
               >
                 <LuSend className="w-4 h-4" />
@@ -263,6 +272,7 @@ function NotificationsContent() {
             isPreview={isPreview}
             onTogglePreview={() => setIsPreview(!isPreview)}
             onClose={handleCloseModal}
+            onSavingChange={setIsSavingNotification}
           />
         </Modal>
       )}

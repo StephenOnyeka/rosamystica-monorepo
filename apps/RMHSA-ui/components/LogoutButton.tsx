@@ -16,13 +16,9 @@ const LogoutButton = ({ onLogout }: LogoutButtonProps) => {
       await customFetch("/api/admin/logout", {
         method: "POST",
       });
-
-      localStorage.removeItem("token");
-      onLogout();
-      router.push("/admin");
     } catch (error) {
       console.error("Logout error:", error);
-      localStorage.removeItem("token");
+    } finally {
       onLogout();
       router.push("/admin");
     }

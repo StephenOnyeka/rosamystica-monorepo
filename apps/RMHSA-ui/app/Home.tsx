@@ -14,6 +14,7 @@ import { useSubscriptionsContext } from "@/hooks/useSubscriptionsContext";
 import { customFetch } from "@/lib/api";
 import { BsBoxArrowUpRight } from "react-icons/bs";
 import type { Subscription } from "@/lib/types";
+import { ThrottledButton } from "@/components/ThrottledButton";
 
 type SubscriptionResponse = Subscription & {
   mssg?: string;
@@ -30,14 +31,17 @@ function Home1() {
   const [error, setError] = useState<string | null>(null); //initialize with null
   const [mssg, setMssg] = useState<string | null>(null);
   const [warn, setWarn] = useState<string | null>(null);
+  const [isSubscribing, setIsSubscribing] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isSubscribing) return;
     const subscription = { email };
     // Clear previous messages
     setError(null);
     setMssg(null);
     setWarn(null);
+    setIsSubscribing(true);
 
     try {
       const json = await customFetch<SubscriptionResponse>("/api/subscriptions", {
@@ -56,6 +60,8 @@ function Home1() {
       } else {
         setError(err.message || "Failed to subscribe");
       }
+    } finally {
+      setIsSubscribing(false);
     }
   };
 
@@ -460,9 +466,14 @@ function Home1() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                         />
-                        <button className="bg-primary hover:opacity-70 p-4 w-full mt-4 text-white font-semibold">
+                        <ThrottledButton
+                          type="submit"
+                          isLoading={isSubscribing}
+                          loadingText="Subscribing..."
+                          className="bg-primary hover:opacity-70 p-4 w-full mt-4 text-white font-semibold cursor-pointer"
+                        >
                           Subscribe
-                        </button>
+                        </ThrottledButton>
                         {error && (
                           <div className="text-red-500 border border-red-500 bg-red-100 p-2 mt-4">
                             {error}

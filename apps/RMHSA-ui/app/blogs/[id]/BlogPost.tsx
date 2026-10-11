@@ -54,6 +54,7 @@ export default function BlogPost({ id }: { id: string }) {
   const handleDelete = () => {
     if (
       !blog ||
+      deleteBlog.isPending ||
       !window.confirm("Are you sure you want to delete this blog post?")
     )
       return;
@@ -158,6 +159,7 @@ export default function BlogPost({ id }: { id: string }) {
                   <ThrottledButton
                     type="button"
                     onClick={handleDelete}
+                    isLoading={deleteBlog.isPending}
                     loadingText="Deleting..."
                     className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg shadow-sm cursor-pointer"
                     title="Delete Article"
