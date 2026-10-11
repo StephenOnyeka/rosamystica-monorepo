@@ -9,6 +9,7 @@ import ScrollDiv from "@/components/Scroll";
 import Loading from "@/components/loading";
 import { useAdminContext } from "@/hooks/useAdminContext";
 
+// Dynamic client-side import for Tiptap-powered BlogForm
 const BlogForm = dynamic(() => import("@/components/BlogForm"), {
   ssr: false,
   loading: () => <Loading />,

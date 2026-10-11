@@ -2,6 +2,7 @@
 
 import { useState, useEffect, type SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
+// Migrated to TanStack Query hooks
 import { useCreateBlog, useUpdateBlog } from "@/lib/queries";
 import type { Blog } from "@/lib/types";
 import { Geist } from "next/font/google";

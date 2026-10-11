@@ -80,7 +80,7 @@ export class NotificationsService {
     const notification = await this.notificationRepository.save({
       title: blog.title,
       desc: blog.desc || blog.title.substring(0, 100),
-      body: blog.body,
+      body: (blog.body ?? '') as string,
       type: 'blog',
       relatedBlogId: blog.id,
     });

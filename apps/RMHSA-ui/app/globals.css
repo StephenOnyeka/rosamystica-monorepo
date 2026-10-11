@@ -17,6 +17,9 @@
   --font-playfair: var(--font-playfair-display), "Playfair Display", "Playfair",
     serif;
   --font-poppins: var(--font-poppins-sans), "Poppins", sans-serif;
+
+  /* Toast progress bar */
+  --animate-shrink: shrink linear forwards;
 }
 
 @theme {

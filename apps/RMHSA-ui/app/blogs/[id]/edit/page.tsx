@@ -12,6 +12,7 @@ import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Blog } from "@/lib/types";
 import { customFetch } from "@/lib/api";
 
+// Dynamic client-side import for Tiptap-powered BlogForm
 const BlogForm = dynamic(() => import("@/components/BlogForm"), {
   ssr: false,
   loading: () => <Loading />,
