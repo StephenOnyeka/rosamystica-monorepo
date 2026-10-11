@@ -86,8 +86,8 @@ function BlogsContent() {
         {/* Blog list */}
         <div className="font-semibold w-full max-w-6xl mx-auto">
           {blogs &&
-            blogs.map((blog, index) => (
-              <BlogsDetails key={blog.id || blog._id || index} blog={blog} />
+            blogs.map((blog) => (
+              <BlogsDetails key={blog.id} blog={blog} />
             ))}
 
           {/* Pagination Controls */}

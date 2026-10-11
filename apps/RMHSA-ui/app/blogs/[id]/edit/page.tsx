@@ -56,7 +56,7 @@ export default function EditBlogPage({ params }: EditBlogPageProps) {
         <br />
 
         {/* Page header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-8 max-w-5xl mx-auto">
           <Link
             href={`/blogs/${id}`}
             className="flex items-center justify-center w-10 h-10 rounded-full bg-contingent/10 hover:bg-contingent/20 text-contingent transition-colors duration-200 flex-shrink-0"
@@ -64,9 +64,6 @@ export default function EditBlogPage({ params }: EditBlogPageProps) {
           >
             <ArrowLeft2 size={20} color="#00416d" variant="Bold" />
           </Link>
-          <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 shadow-xs border-double border-4 bg-purple-50 text-purple-600 border-purple-100">
-            <Note size="24" variant="Bold" />
-          </div>
           <div>
             <h1 className="text-3xl font-bold text-contingent font-playfair">
               Edit Blog Post

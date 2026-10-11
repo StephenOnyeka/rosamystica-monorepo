@@ -173,7 +173,14 @@ function BlogForm({
     }
   };
 
-  const handlePreviewToggle = () => setPreview((p) => !p);
+  const handlePreviewToggle = () => {
+    if (!preview && !title.trim()) {
+      setError("Please enter a title for your blog post before previewing.");
+      return;
+    }
+    setError(null);
+    setPreview((p) => !p);
+  };
 
   const defaultSubmitText = isEditing ? "Save" : "Publish";
   const actionButtonText = submitLabel || defaultSubmitText;
@@ -208,7 +215,7 @@ function BlogForm({
                   <ThrottledButton
                     type="button"
                     onClick={handleSubmit}
-                    loadingText="Saving..."
+                    loadingText={isEditing ? "Saving..." : "Publishing..."}
                     className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-sm"
                   >
                     <LuCheck className="w-4 h-4" />
@@ -288,7 +295,7 @@ function BlogForm({
                   <ThrottledButton
                     type="button"
                     onClick={handleSubmit}
-                    loadingText="Saving..."
+                    loadingText={isEditing ? "Saving..." : "Publishing..."}
                     className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md"
                   >
                     <LuSend className="w-4 h-4" />
@@ -300,7 +307,10 @@ function BlogForm({
           ) : (
             /* ── Editor Form Mode ── */
             <form
-              onSubmit={handleSubmit}
+              onSubmit={(e) => {
+                e.preventDefault();
+                handlePreviewToggle();
+              }}
               className={`w-full pt-0 ${geist.className}`}
             >
               <div className="max-w-5xl mx-auto">
@@ -387,20 +397,12 @@ function BlogForm({
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-4 mb-8">
-                  <ThrottledButton
-                    type="submit"
-                    loadingText="Publishing..."
-                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md cursor-pointer"
-                  >
-                    <LuSend className="w-4 h-4" />
-                    {actionButtonText}
-                  </ThrottledButton>
                   <button
                     type="button"
-                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all cursor-pointer"
+                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md cursor-pointer transition-all"
                     onClick={handlePreviewToggle}
                   >
-                    <LuEye className="w-4 h-4 text-contingent" />
+                    <LuEye className="w-4 h-4" />
                     Preview
                   </button>
                 </div>
