@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 // import { ConfigService } from '@nestjs/config';
@@ -12,6 +12,14 @@ async function bootstrap() {
   // bodyParser: false so the 200mb limits below replace Nest's defaults
   // (mirrors the legacy Express setup).
   const app = await NestFactory.create(AppModule, { bodyParser: false });
+
+  // Global validation pipe using class-validator
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
 
   // Mirror the original Express middleware stack: open CORS, 200mb body
   // limits, then a request logger (path + method).

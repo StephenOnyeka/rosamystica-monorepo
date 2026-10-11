@@ -12,7 +12,7 @@ import NotificationsDetails from "@/components/NotificationDetail";
 import Loading from "@/components/loading";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Notification } from "@/lib/types";
-import { useBlogs, useNotifications } from "@/lib/queries";
+import { useNotifications } from "@/lib/queries";
 import Modal from "@/components/Modal";
 import NotificationDetailModal from "@/components/NotificationDetailModal";
 import { ThrottledButton } from "@/components/ThrottledButton";
@@ -42,10 +42,6 @@ function NotificationsContent() {
   );
   const notifications = notificationsData?.notifications;
   const totalPages = notificationsData?.totalPages ?? 0;
-  // Published blogs so new articles show up by default
-  const { data: blogsData } = useBlogs(currentPage, postsPerPage);
-  const blogs = blogsData?.blogs ?? [];
-
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingNotification, setEditingNotification] =
@@ -74,25 +70,7 @@ function NotificationsContent() {
 
   if (isPending) return <Loading />;
 
-  // Blogs that have no corresponding blog notification yet
-  const coveredBlogIds = new Set(
-    (notifications || [])
-      .map((n) => (n.relatedBlogId || n.blogId) as string | undefined)
-      .filter(Boolean),
-  );
-  const blogNotifications: Notification[] = blogs
-    .filter((b) => b.id && !coveredBlogIds.has(b.id))
-    .map((b) => ({
-      id: `blog-${b.id}`,
-      title: b.title,
-      desc: b.desc,
-      body: b.body,
-      type: "blog",
-      relatedBlogId: b.id,
-      createdAt: b.createdAt,
-    }));
-
-  const allNotifications = [...(notifications || []), ...blogNotifications].sort(
+  const allNotifications = (notifications || []).slice().sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 

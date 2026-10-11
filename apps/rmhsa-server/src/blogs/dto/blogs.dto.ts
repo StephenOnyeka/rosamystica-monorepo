@@ -1,29 +1,38 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-// The legacy handlers read these fields straight from req.body and performed
-// manual empty-field validation, so no class-validator decorators are applied
-// here.
 export class CreateBlogDto {
   @ApiProperty({ description: 'Blog post title', required: true })
-  title?: string;
+  @IsString()
+  @IsNotEmpty({ message: 'Title is required' })
+  title: string;
 
   @ApiProperty({ description: 'Blog post description', required: true })
-  desc?: string;
+  @IsString()
+  @IsNotEmpty({ message: 'Description is required' })
+  desc: string;
 
   @ApiProperty({ description: 'Blog post body content', required: true })
-  // Matches the Schema.Types.Mixed body in models/blogModel.js.
-  body?: unknown;
+  // Matches the Schema.Types.Mixed body in models/blogModel.js (string or TipTap JSON)
+  @IsNotEmpty({ message: 'Body content is required' })
+  body: unknown;
 
   @ApiProperty({ description: 'Primary image URL or base64', required: false })
+  @IsOptional()
+  @IsString()
   image?: string;
 
   @ApiProperty({ description: 'Cover image URL or base64', required: false })
+  @IsOptional()
+  @IsString()
   coverImage?: string;
 
   @ApiProperty({
     description: 'Background image URL or base64',
     required: false,
   })
+  @IsOptional()
+  @IsString()
   backgroundImage?: string;
 }
 
@@ -31,23 +40,34 @@ export class CreateBlogDto {
 // the fields is accepted).
 export class UpdateBlogDto {
   @ApiProperty({ description: 'Blog post title', required: false })
+  @IsOptional()
+  @IsString()
   title?: string;
 
   @ApiProperty({ description: 'Blog post description', required: false })
+  @IsOptional()
+  @IsString()
   desc?: string;
 
   @ApiProperty({ description: 'Blog post body content', required: false })
+  @IsOptional()
   body?: unknown;
 
   @ApiProperty({ description: 'Primary image URL or base64', required: false })
+  @IsOptional()
+  @IsString()
   image?: string;
 
   @ApiProperty({ description: 'Cover image URL or base64', required: false })
+  @IsOptional()
+  @IsString()
   coverImage?: string;
 
   @ApiProperty({
     description: 'Background image URL or base64',
     required: false,
   })
+  @IsOptional()
+  @IsString()
   backgroundImage?: string;
 }
