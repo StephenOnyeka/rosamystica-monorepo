@@ -95,10 +95,10 @@ function NotificationsContent() {
         <br />
 
         {/* Header Section with Create Notification Action for Admins */}
-        <div className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 font-playfair mb-2">
-              Notifications
+        <div className="max-w-5xl mx-auto mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="">
+            <h1 className="text-3xl font-bold text-gray-900 font-poppins mb-2">
+              Rosa Mystica High School Announcements
             </h1>
             <p className="text-gray-600">
               Stay updated with the latest announcements and updates from Rosa
@@ -117,7 +117,7 @@ function NotificationsContent() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="max-w-7xl mx-auto my-6">
+        <div className="max-w-5xl mx-auto my-6">
           {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 flex gap-2 overflow-x-auto"> */}
           <div className="bg-white border-b-2 border-gray-200 p-2 flex gap-2 overflow-x-auto">
             <button

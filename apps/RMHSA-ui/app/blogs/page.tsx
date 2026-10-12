@@ -12,6 +12,7 @@ import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
 import BlogsDetails from "@/components/BlogsDetails";
 import Loading from "@/components/loading";
+import { LuPlus } from "react-icons/lu";
 
 function BlogsContent() {
   const { isAdmin } = useAdminContext();
@@ -38,10 +39,13 @@ function BlogsContent() {
         <br />
 
         {/* Page title + Create Blog button */}
-        <div className="flex items-center justify-between mb-6 max-w-6xl mx-auto">
-          <h1 className="text-2xl font-bold text-contingent font-playfair">
-            Blog Posts
+        {/* <div className="flex items-center justify-between mb-6 max-w-5xl mx-auto">
+          <h1 className="text-3xl font-bold font-poppins text-contingent">
+            Rosa Mystica High School Blog & News
+            <span className="block w-full h-0.5 bg-gray-300 mt-2 border border-primary"></span>
           </h1>
+          
+
           {isAdmin && (
             <Link
               href="/blogs/new"
@@ -56,14 +60,31 @@ function BlogsContent() {
               Create Blog
             </Link>
           )}
+        </div> */}
+        <div className="max-w-5xl mx-auto mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="">
+            <h1 className="text-3xl font-bold text-gray-900 font-poppins mb-2">
+              Rosa Mystica High School Blog & News
+            </h1>
+            <p className="text-gray-600">
+              Stay updated with our latest blogs and news
+            </p>
+          </div>
+          {isAdmin && (
+            <Link
+              href="/blogs/new"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-contingent hover:bg-contingent-2 text-white font-semibold rounded-xl shadow-sm transition-all cursor-pointer text-sm self-start md:self-auto"
+            >
+              <LuPlus className="w-5 h-5" />
+              Create Blog
+            </Link>
+          )}
         </div>
 
         {/* Blog list */}
-        <div className="font-semibold w-full max-w-6xl mx-auto">
+        <div className="font-semibold w-full max-w-5xl mx-auto">
           {blogs &&
-            blogs.map((blog) => (
-              <BlogsDetails key={blog.id} blog={blog} />
-            ))}
+            blogs.map((blog) => <BlogsDetails key={blog.id} blog={blog} />)}
 
           {/* Pagination Controls */}
           <br />

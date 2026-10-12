@@ -23,7 +23,9 @@ export default function Gallery() {
   return (
     <div className="p-4">
       <SchoolJsonLd extraSchema={[gallerySchema]} />
-      <p className="py-4 mb-2 font-bold text-lg text-center">Gallery</p>
+      <h1 className="py-4 mb-2 font-bold text-2xl text-center text-contingent font-poppins">
+        Rosa Mystica High School Campus Gallery
+      </h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-sm:gap-2 ">
         <div className="group relative text-white overflow-hidden cursor-pointer h-auto">

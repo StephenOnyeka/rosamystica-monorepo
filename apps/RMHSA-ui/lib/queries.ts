@@ -36,10 +36,13 @@ export const useBlogs = (page: number, limit: number) =>
     placeholderData: keepPreviousData,
   });
 
-export const useBlog = (id: string) =>
+export const useBlog = (id: string, initialData?: Blog | null) =>
   useQuery({
     queryKey: queryKeys.blog(id),
     queryFn: () => customFetch<Blog>(`/api/blogs/${id}`),
+    initialData: initialData ?? undefined,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
   });
 
 // Create blog — optimistic: insert a temp entry, replace with real on success.

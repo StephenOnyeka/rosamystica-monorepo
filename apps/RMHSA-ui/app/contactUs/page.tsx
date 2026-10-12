@@ -78,9 +78,10 @@ export default function ContactUs() {
               <Navbar />
             </div>
             <div className="pt-[30%] pb-[5%] lg:pt-[25%] text-center flex-col">
-              <p className="text-6xl font-bold pb-3 max-md:text-5xl max-sm:text-3xl">
+              <h1 className="text-6xl font-bold pb-3 max-md:text-5xl max-sm:text-3xl">
                 Contact Us
-              </p>
+                <span className="sr-only"> — Rosa Mystica High School</span>
+              </h1>
               <p className="text-2xl max-md:text-xl max-sm:text-lg">
                 Get In Touch
               </p>

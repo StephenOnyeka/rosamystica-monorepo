@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import Home from "./Home";
 import SchoolJsonLd from "@/components/SchoolJsonLd";
-import { pageMetadata } from "@/lib/seo";
+import { defaultSchoolFaqs, faqSchema, pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata("home", {
   keywords:
-    "Rosa Mystica High School, Agulu, academics, athletics, facilities, education, RMHS, Rosa, Rosa Mystica, Girls, Best School for girls, Best School in Nigeria, Best School in Anambra, Best School in Agulu, Best School for Girls in Nigeria, Girls School, Rosa Mystica Nigeria, Agulu Girls, Best for girls, Rosa Mystica High School Agulu, Rosa Mystica High School Nigeria, Girls High School, Top 3 best school for girls in Nigeria, Top 3 best school in Anambra, Top 3 best school in Agulu, Top 3 best school for girls",
+    "Rosa Mystica, Rosa Mystica High School, Best School for Girls, Best School for Girls in Nigeria, Best Catholic School for Girls, Catholic Girls Secondary School Nigeria, Girls Boarding School Anambra, Top Girls High School Nigeria, RMHS Agulu",
   image: "https://www.rmhsagulu.com/images/RMHS.jpg",
 });
 
@@ -23,7 +23,7 @@ function Loader() {
 export default function HomePage() {
   return (
     <div>
-      <SchoolJsonLd />
+      <SchoolJsonLd extraSchema={[faqSchema(defaultSchoolFaqs)]} />
       <Suspense fallback={<Loader />}>
         <Home />
       </Suspense>

@@ -92,14 +92,15 @@ function Home1() {
               {/* <div className="mt-32"> */}
               <div className="">
                 <div className="flex flex-col items-start gap-5 max-sm:gap-3">
-                  <p className="font-playfair italic text-5xl max-md:text-4xl max-sm:text-2xl max-sm:">
+                  <span className="font-playfair italic text-5xl max-md:text-4xl max-sm:text-2xl">
                     Welcome to{" "}
-                  </p>
-                  <p className="font-playfair text-8xl max-sm:text-5xl max-md:text-6xl max-lg:text-7xl">
+                  </span>
+                  <h1 className="font-playfair text-8xl max-sm:text-5xl max-md:text-6xl max-lg:text-7xl">
                     <span className="font-bold">Rosa Mystica</span> High School,
                     <br />
                     Agulu.
-                  </p>
+                    <span className="sr-only"> — Best Catholic School for Girls in Nigeria</span>
+                  </h1>
                   {/* <p>{"{ R.M.H.S. }"}</p> */}
                   <Link href="/school-life">
                     <button className="bg-primary hover:bg-transparent hover:border hover:border-white text-white font-bold mt-2 px-8 py-4 max-sm:mt-6">
@@ -276,11 +277,11 @@ function Home1() {
             >
               <div className="bg-primary/70 px-20 leading-7 w-1/2 max-md:w-5/6 max-sm:w-full py-28 max-sm:px-6 max-sm:py-20">
                 <div className="my-8 leading-8">
-                  <p className="text-4xl max-sm:text-3xl font-bold pb-2">
+                  <h2 className="text-4xl max-sm:text-3xl font-bold pb-2">
                     Apply for Admission
-                  </p>
+                  </h2>
                   <p className="text-lg max-sm:text-base ">
-                    Fall 2024 applications are now open
+                    Academic Session Admissions Now Open
                   </p>
                 </div>
                 <p className="text-lg max-sm:text-base">
@@ -308,12 +309,12 @@ function Home1() {
               </div>
 
               <div id="facilities" className="my-16 bg-[]">
-                <h1 className="max-sm:mt-24 text-4xl max-sm:text-2xl text-center text-contingent-text font-medium ">
+                <h2 className="max-sm:mt-24 text-4xl max-sm:text-2xl text-center text-contingent-text font-medium ">
                   Rosa Mystica Facilities
-                </h1>
+                </h2>
                 <div className="flex flex-col items-center justify-between ">
                   <Link href="/gallery">
-                    <button className="flex gap-4 items-center bg-primary hover:bg-blue-400 border border-gray-200 rounded-lg text-white px-6 py-4 my-8 mb-20">
+                    <button className="flex gap-4 items-center bg-primary hover:bg-blue-400 border border-gray-200 rounded-lg text-white px-6 py-4 my-8 mb-20 cursor-pointer transition-all">
                       <span> Visit Page </span>
                       <BsBoxArrowUpRight />
                     </button>
@@ -325,9 +326,9 @@ function Home1() {
                         Icon
                       </div> */}
                       <div>
-                        <h1 className="text-contingent text-xl font-medium pb-4 max-sm:text-lg">
+                        <h3 className="text-contingent text-xl font-medium pb-4 max-sm:text-lg">
                           Eco-Friendly Environment
-                        </h1>
+                        </h3>
                         <p className="text-gray-500 leading-7 max-sm:text-sm">
                           We maintain the excellent standard in designing
                           {/* eco-friendly structures and layout for healthy & */}
@@ -340,9 +341,9 @@ function Home1() {
                         Icon
                       </div> */}
                       <div>
-                        <h1 className="text-contingent text-xl font-medium pb-4 max-sm:text-lg">
+                        <h3 className="text-contingent text-xl font-medium pb-4 max-sm:text-lg">
                           Innovative Classrooms
-                        </h1>
+                        </h3>
                         <p className="text-gray-500 leading-7 max-sm:text-sm">
                           Our classrooms are designed to inspire learning and
                           support emotional and physical wellness excellently.
@@ -354,9 +355,9 @@ function Home1() {
                         Icon
                       </div> */}
                       <div>
-                        <h1 className="text-contingent text-xl font-medium pb-4 max-sm:text-lg">
+                        <h3 className="text-contingent text-xl font-medium pb-4 max-sm:text-lg">
                           Relevant Amenities
-                        </h1>
+                        </h3>
                         <p className="text-gray-500 leading-7 max-sm:text-sm">
                           From Dedicated and furnished laboratories, to sports
                           centers and center for skill acquisition.

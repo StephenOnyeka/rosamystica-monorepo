@@ -19,6 +19,7 @@ import {
   LuPencil,
   LuShare2,
   LuCheck,
+  LuRefreshCw,
 } from "react-icons/lu";
 import { ArrowLeft2 } from "iconsax-reactjs";
 import Topfile from "@/components/Topfile";
@@ -26,6 +27,7 @@ import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import { useBlog, useDeleteBlog } from "@/lib/queries";
+import type { Blog } from "@/lib/types";
 
 // Import Tiptap ProseMirror node styles to guarantee exact spacing, images, lists, and formatting as in the editor
 import "@/components/tiptap-node/blockquote-node/blockquote-node.scss";
@@ -37,8 +39,19 @@ import "@/components/tiptap-node/heading-node/heading-node.scss";
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 import "@/components/tiptap-templates/simple/simple-editor.scss";
 
-export default function BlogPost({ id }: { id: string }) {
-  const { data: blog = null, isPending: loading, error: queryError } = useBlog(id);
+export default function BlogPost({
+  id,
+  initialBlog,
+}: {
+  id: string;
+  initialBlog?: Blog | null;
+}) {
+  const {
+    data: blog = initialBlog ?? null,
+    isPending: loading,
+    error: queryError,
+    refetch,
+  } = useBlog(id, initialBlog);
   const error = queryError
     ? queryError instanceof Error
       ? queryError.message
@@ -172,14 +185,27 @@ export default function BlogPost({ id }: { id: string }) {
 
           {error ? (
             <div className="py-12 px-4 text-center bg-white rounded-2xl border border-gray-100 shadow-sm my-8">
-              <p className="text-red-500 font-semibold mb-4">{error}</p>
-              <Link
-                href="/blogs"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
-              >
-                <LuArrowLeft className="w-4 h-4" />
-                Back to Blogs
-              </Link>
+              <p className="text-red-500 font-semibold mb-2">{error}</p>
+              <p className="text-xs text-gray-500 mb-5">
+                Unable to load this article. The backend server might be restarting or unreachable.
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => refetch()}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-contingent hover:bg-contingent-2 text-white rounded-lg text-sm font-medium transition-colors shadow-sm cursor-pointer"
+                >
+                  <LuRefreshCw className="w-4 h-4" />
+                  Retry
+                </button>
+                <Link
+                  href="/blogs"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                >
+                  <LuArrowLeft className="w-4 h-4" />
+                  Back to Blogs
+                </Link>
+              </div>
             </div>
           ) : !blog ? null : (
             /* Article card mirrors BlogForm preview mode exactly */

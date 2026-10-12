@@ -29,7 +29,10 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: DEFAULT_TITLE,
+  title: {
+    default: DEFAULT_TITLE,
+    template: `%s | ${SITE_NAME}`,
+  },
   description: DEFAULT_DESCRIPTION,
   keywords: DEFAULT_KEYWORDS,
   authors: [{ name: SITE_NAME, url: SITE_URL }],
@@ -44,14 +47,13 @@ export const metadata: Metadata = {
     url: SITE_URL,
     siteName: SITE_NAME,
     title: DEFAULT_TITLE,
-    description:
-      "Welcome to Rosa Mystica High School, Agulu. Explore our academics, athletics, and facilities. Join us in shaping the future of education.",
+    description: DEFAULT_DESCRIPTION,
     images: [
       {
         url: DEFAULT_OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: "Rosa Mystica High School - Main Campus",
+        alt: "Rosa Mystica High School - Premier Catholic School for Girls",
       },
     ],
   },
@@ -60,8 +62,7 @@ export const metadata: Metadata = {
     site: TWITTER_HANDLE,
     creator: TWITTER_HANDLE,
     title: DEFAULT_TITLE,
-    description:
-      "Welcome to Rosa Mystica High School, Agulu. Explore our academics, athletics, and facilities. Join us in shaping the future of education.",
+    description: DEFAULT_DESCRIPTION,
     images: [DEFAULT_OG_IMAGE],
   },
 };

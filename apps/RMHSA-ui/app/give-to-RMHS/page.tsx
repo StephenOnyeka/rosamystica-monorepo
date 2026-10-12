@@ -32,9 +32,10 @@ export default function Donate() {
               <p className="text-xl pb-3 max-sm:text-lg max-sm:pb-1">
                 Become a donor
               </p>
-              <p className="text-5xl font-bold max-sm:text-3xl">
+              <h1 className="text-5xl font-bold max-sm:text-3xl">
                 Give To Rosa Mystica
-              </p>
+                <span className="sr-only"> High School</span>
+              </h1>
             </div>
           </div>
         </div>

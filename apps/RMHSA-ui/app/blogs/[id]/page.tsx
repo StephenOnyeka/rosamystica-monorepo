@@ -44,5 +44,6 @@ export async function generateMetadata({
 
 export default async function BlogPage({ params }: BlogPageProps) {
   const { id } = await params;
-  return <BlogPost id={id} />;
+  const blog = await getBlog(id);
+  return <BlogPost id={id} initialBlog={blog} />;
 }

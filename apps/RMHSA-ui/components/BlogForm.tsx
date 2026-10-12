@@ -21,7 +21,9 @@ import {
   LuEye,
   LuArrowLeft,
   LuCheck,
+  LuLoader,
 } from "react-icons/lu";
+import { uploadImage } from "@/lib/upload";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -64,22 +66,33 @@ function BlogForm({
 
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
   const { isAdmin } = useAdminContext();
   const createBlog = useCreateBlog();
   const updateBlog = useUpdateBlog();
-  const isSaving = createBlog.isPending || updateBlog.isPending;
+  const isSaving = createBlog.isPending || updateBlog.isPending || isUploadingCover;
   const router = useRouter();
 
-  const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCoverImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === "string") {
-          setCoverImage(reader.result);
-        }
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    setError(null);
+    setIsUploadingCover(true);
+    try {
+      const url = await uploadImage(file);
+      setCoverImage(url);
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to upload cover image to Cloudinary"
+      );
+    } finally {
+      setIsUploadingCover(false);
+      e.target.value = "";
     }
   };
 
@@ -286,7 +299,17 @@ function BlogForm({
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Cover / Header Background Image
                   </label>
-                  {coverImage ? (
+                  {isUploadingCover ? (
+                    <div className="flex flex-col items-center justify-center w-full h-48 rounded-xl border-2 border-dashed border-contingent bg-contingent/5 p-6 text-center shadow-sm">
+                      <LuLoader className="w-8 h-8 text-contingent animate-spin mb-3" />
+                      <span className="text-sm font-semibold text-contingent">
+                        Uploading & optimizing image on Cloudinary...
+                      </span>
+                      <span className="text-xs text-gray-500 mt-1">
+                        Converting to auto WebP/AVIF format
+                      </span>
+                    </div>
+                  ) : coverImage ? (
                     <div className="relative group w-full h-64 md:h-72 rounded-xl overflow-hidden shadow-md border border-gray-200 bg-gray-900">
                       <img
                         src={coverImage}

@@ -5,7 +5,11 @@ Allow: /
 # *
 User-agent: *
 Disallow: /admin
+Disallow: /admin/*
 Disallow: /api/
+Disallow: /simple
+Disallow: /blogs/new
+Disallow: /blogs/*/edit
 
 # Host
 Host: https://www.rmhsagulu.com/

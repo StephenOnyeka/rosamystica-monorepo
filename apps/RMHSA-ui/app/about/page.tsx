@@ -60,10 +60,11 @@ export default function About() {
           <div id="RosaMystica" className="flex flex-col items-center py-10">
             <div className="flex gap-16 max-xl:flex-wrap max-sm:gap-8 ">
               <div className="min-w-80">
-                <p className=" font-bold font-poppins text-3xl text-contingent max-sm:text-2xl">
+                <h1 className="font-bold font-poppins text-3xl text-contingent max-sm:text-2xl">
                   Rosa Mystica's History
+                  <span className="sr-only"> — Rosa Mystica High School Agulu</span>
                   <span className="element-divider-seperator flex w-5/6 mt-4 border-2 border-primary max-sm:w-4/6 "></span>
-                </p>
+                </h1>
               </div>
               <div className="grid grid-cols-2 max-xl:grid-cols-1 max-xl:grid-rows-2 max-xl:grid-flow-row ">
                 <p className=" text-gray-500 leading-7 min-w-60 px-6 max-sm:px-0 max-sm:leading-6 max-sm:text-sm text-justify">
