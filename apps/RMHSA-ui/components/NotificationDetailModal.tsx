@@ -3,14 +3,13 @@
 import Modal from "@/components/Modal";
 import type { Notification } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
-import { cleanHtmlContent, parseCleanHtml } from "@/lib/utils";
+import { parseCleanHtml } from "@/lib/utils";
 import { LuClock, LuPencil, LuTag } from "react-icons/lu";
-import { NotificationBing, Note, Edit } from "iconsax-reactjs";
+import { NotificationBing, Note } from "iconsax-reactjs";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import { Geist } from "next/font/google";
 
 const geist = Geist({ subsets: ["latin"] });
-// import { IoPencil, IoPencilOutline } from "react-icons/io5";
 
 interface NotificationDetailModalProps {
   notification: Notification | null;
@@ -38,9 +37,7 @@ export default function NotificationDetailModal({
       })
     : "";
 
-  const sanitizedBody = cleanHtmlContent(
-    notification.body || notification.desc || "",
-  );
+
 
   return (
     <Modal
@@ -58,7 +55,6 @@ export default function NotificationDetailModal({
                 }}
                 className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition-all shadow-xs cursor-pointer text-sm flex items-center gap-2"
               >
-                {/* <IoPencil size="18" /> */}
                 <LuPencil size="18" />
                 Edit
               </button>

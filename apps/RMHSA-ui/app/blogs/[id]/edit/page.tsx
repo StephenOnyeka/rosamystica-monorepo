@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowLeft2, Note } from "iconsax-reactjs";
+import { ArrowLeft2 } from "iconsax-reactjs";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
 import ScrollDiv from "@/components/Scroll";

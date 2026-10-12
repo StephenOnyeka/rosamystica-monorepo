@@ -6,7 +6,6 @@ import { formatDistanceToNow } from "date-fns";
 import { useDeleteBlog } from "@/lib/queries";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Blog } from "@/lib/types";
-import { customFetch } from "@/lib/api";
 import { ThrottledButton } from "@/components/ThrottledButton";
 import {
   LuCalendar,

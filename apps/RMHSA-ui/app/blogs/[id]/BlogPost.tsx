@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/loading";
@@ -9,8 +9,6 @@ import { Geist } from "next/font/google";
 
 const geist = Geist({ subsets: ["latin"] });
 import { formatDistanceToNow } from "date-fns";
-import type { Blog } from "@/lib/types";
-import { customFetch } from "@/lib/api";
 import { ThrottledButton } from "@/components/ThrottledButton";
 import {
   LuUser,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
-import { IoClose, IoCloseCircle } from "react-icons/io5";
+import { IoCloseCircle } from "react-icons/io5";
 
 interface ModalProps {
   isOpen: boolean;

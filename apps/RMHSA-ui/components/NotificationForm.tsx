@@ -8,12 +8,11 @@ import "react-quill-new/dist/quill.bubble.css";
 import { useSaveNotification } from "@/lib/queries";
 import type { Notification } from "@/lib/types";
 
-import { customFetch } from "@/lib/api";
 import { ThrottledButton } from "@/components/ThrottledButton";
-import { LuPencil, LuSend, LuEye, LuCheck, LuBell } from "react-icons/lu";
+import { LuPencil, LuSend, LuEye, LuCheck } from "react-icons/lu";
 import { NotificationBing } from "iconsax-reactjs";
 import { Geist } from "next/font/google";
-import { cleanHtmlContent, parseCleanHtml, stripHtmlTags } from "@/lib/utils";
+import { parseCleanHtml, stripHtmlTags } from "@/lib/utils";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -43,7 +42,6 @@ function NotificationForm({
   const [desc, setDesc] = useState(initialData?.desc ?? "");
   const [body, setBody] = useState(initialData?.body ?? "");
   const [error, setError] = useState<string | null>(null);
-  const [emptyFields, setEmptyFields] = useState<string[]>([]);
   const [internalPreview, setInternalPreview] = useState(false);
   const preview =
     controlledIsPreview !== undefined ? controlledIsPreview : internalPreview;
@@ -98,7 +96,6 @@ function NotificationForm({
         setTitle("");
         setDesc("");
         setBody("");
-        setEmptyFields([]);
       }
       onClose?.();
     } catch (err: any) {

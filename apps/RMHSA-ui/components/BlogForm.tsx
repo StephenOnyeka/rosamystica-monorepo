@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useCreateBlog, useUpdateBlog } from "@/lib/queries";
 import type { Blog } from "@/lib/types";
 import { Geist } from "next/font/google";
-import { customFetch } from "@/lib/api";
 import { SimpleEditor } from "./tiptap-templates/simple/simple-editor";
 import { ThrottledButton } from "@/components/ThrottledButton";
 import { useAdminContext } from "@/hooks/useAdminContext";
