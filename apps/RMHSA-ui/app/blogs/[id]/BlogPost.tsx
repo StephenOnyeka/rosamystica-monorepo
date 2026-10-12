@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Loading from "@/components/loading";
+import { BlogPostSkeleton } from "@/components/skeletons/BlogSkeleton";
 import DOMPurify from "dompurify";
 import { Geist } from "next/font/google";
 
@@ -94,7 +94,7 @@ export default function BlogPost({
     return `${minutes} min read`;
   };
 
-  if (loading) return <Loading />;
+  if (loading && !blog) return <BlogPostSkeleton />;
 
   const blogId = blog?.id || blog?._id || id;
 

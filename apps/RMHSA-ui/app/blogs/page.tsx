@@ -11,7 +11,7 @@ import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
 import BlogsDetails from "@/components/BlogsDetails";
-import Loading from "@/components/loading";
+import { BlogListSkeleton, BlogsPageSkeleton } from "@/components/skeletons/BlogSkeleton";
 import { LuPlus } from "react-icons/lu";
 
 function BlogsContent() {
@@ -25,8 +25,6 @@ function BlogsContent() {
   const { data, isPending } = useBlogs(currentPage, postsPerPage);
   const blogs = data?.blogs;
   const totalPages = data?.totalPages ?? 0;
-
-  if (isPending) return <Loading />;
 
   return (
     <div>
@@ -83,31 +81,37 @@ function BlogsContent() {
 
         {/* Blog list */}
         <div className="font-semibold w-full max-w-5xl mx-auto">
-          {blogs &&
-            blogs.map((blog) => <BlogsDetails key={blog.id} blog={blog} />)}
+          {isPending ? (
+            <BlogListSkeleton count={postsPerPage} />
+          ) : (
+            <>
+              {blogs &&
+                blogs.map((blog) => <BlogsDetails key={blog.id} blog={blog} />)}
 
-          {/* Pagination Controls */}
-          <br />
-          <br />
-          <div className="w-full flex justify-between mb-8">
-            <button
-              disabled={currentPage <= 1}
-              onClick={() => router.push(`/blogs?page=${currentPage - 1}`)}
-              className="bg-contingent text-sm text-white px-4 py-2 rounded disabled:bg-contingent/20"
-            >
-              Previous
-            </button>
-            <span>
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              disabled={currentPage >= totalPages}
-              onClick={() => router.push(`/blogs?page=${currentPage + 1}`)}
-              className="bg-contingent text-sm text-white px-4 py-2 rounded disabled:bg-contingent/20"
-            >
-              Next
-            </button>
-          </div>
+              {/* Pagination Controls */}
+              <br />
+              <br />
+              <div className="w-full flex justify-between mb-8">
+                <button
+                  disabled={currentPage <= 1}
+                  onClick={() => router.push(`/blogs?page=${currentPage - 1}`)}
+                  className="bg-contingent text-sm text-white px-4 py-2 rounded disabled:bg-contingent/20 cursor-pointer"
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  disabled={currentPage >= totalPages}
+                  onClick={() => router.push(`/blogs?page=${currentPage + 1}`)}
+                  className="bg-contingent text-sm text-white px-4 py-2 rounded disabled:bg-contingent/20 cursor-pointer"
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -116,7 +120,7 @@ function BlogsContent() {
 
 export default function Blogs() {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<BlogsPageSkeleton />}>
       <BlogsContent />
     </Suspense>
   );

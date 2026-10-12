@@ -57,21 +57,21 @@ export default function Modal({
         aria-modal="true"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-          {title ? (
-            typeof title === "string" ? (
-              <h2 className="text-xl font-bold text-gray-800 font-playfair">
-                {title}
-              </h2>
-            ) : (
-              title
-            )
-          ) : (
-            <div />
-          )}
+        <div className="flex items-start justify-between gap-4 px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+          <div className="flex-1 min-w-0">
+            {title ? (
+              typeof title === "string" ? (
+                <h2 className="text-xl font-bold text-gray-800 font-playfair leading-snug">
+                  {title}
+                </h2>
+              ) : (
+                title
+              )
+            ) : null}
+          </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+            className="shrink-0 p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors cursor-pointer mt-0.5"
             aria-label="Close modal"
           >
             <IoCloseCircle className="w-6 h-6" />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useDeleteNotification } from "@/lib/queries";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Notification } from "@/lib/types";
 import { parseCleanHtml } from "@/lib/utils";
@@ -26,6 +26,7 @@ function NotificationsDetails({
   onSelect,
   onEdit,
 }: NotificationsDetailsProps) {
+  const router = useRouter();
   const deleteNotification = useDeleteNotification();
   const { isAdmin } = useAdminContext();
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
@@ -47,8 +48,19 @@ function NotificationsDetails({
     });
   };
 
-  const handleCardClick = () => {
-    if (!isPushedBlog && onSelect) {
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent triggering navigation if clicking inside flyout options
+    if (flyoutRef.current && flyoutRef.current.contains(e.target as Node)) {
+      return;
+    }
+
+    if (isPushedBlog) {
+      if (e.metaKey || e.ctrlKey) {
+        window.open(blogUrl, "_blank");
+      } else {
+        router.push(blogUrl);
+      }
+    } else if (onSelect) {
       onSelect(notification);
     }
   };
@@ -95,7 +107,20 @@ function NotificationsDetails({
     <div className={`mb-6 max-w-4xl mx-auto ${geist.className}`}>
       <div
         onClick={handleCardClick}
-        className="relative flex bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow cursor-pointer group"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleCardClick(e as unknown as React.MouseEvent);
+          }
+        }}
+        aria-label={
+          isPushedBlog
+            ? `Read blog post: ${notification.title}`
+            : `View announcement: ${notification.title}`
+        }
+        className="relative flex bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow cursor-pointer group focus:outline-none focus:ring-2 focus:ring-contingent/30"
       >
         {/* Iconsax icon for notification type identification */}
         <div className="flex-shrink-0 mr-4">
@@ -120,17 +145,9 @@ function NotificationsDetails({
           <div className="flex flex-col min-w-0">
             <div className="flex justify-between gap-2 items-start w-full">
               {/* Title */}
-              {isPushedBlog ? (
-                <Link href={blogUrl}>
-                  <h3 className="text-base font-bold text-gray-900 group-hover:text-contingent transition-colors line-clamp-2 leading-snug">
-                    {notification.title}
-                  </h3>
-                </Link>
-              ) : (
-                <h3 className="text-base font-bold text-gray-900 group-hover:text-contingent transition-colors line-clamp-2 leading-snug">
-                  {notification.title}
-                </h3>
-              )}
+              <h3 className="text-base font-bold text-gray-900 group-hover:text-contingent transition-colors line-clamp-2 leading-snug">
+                {notification.title}
+              </h3>
 
               {/* Clean HTML content preview */}
               {notificationTime && (
