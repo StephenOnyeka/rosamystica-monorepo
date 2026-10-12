@@ -91,7 +91,7 @@ export const useCreateBlog = () => {
       qc.invalidateQueries({ queryKey: queryKeys.notifications });
       toastBus.success("Blog post published successfully! 🎉");
     },
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
       qc.setQueriesData<BlogsResponse>(
         { queryKey: queryKeys.blogs },
         (old) =>
@@ -99,7 +99,11 @@ export const useCreateBlog = () => {
             ? { ...old, blogs: old.blogs.filter((b) => b.id !== ctx?.tempId) }
             : old,
       );
-      toastBus.error("Failed to publish blog post. Please try again.");
+      toastBus.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to publish blog post. Please try again."
+      );
     },
   });
 };
@@ -140,11 +144,15 @@ export const useUpdateBlog = () => {
       qc.invalidateQueries({ queryKey: queryKeys.blog(id) });
       toastBus.success("Blog post updated successfully!");
     },
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
       if (ctx?.prev) {
         ctx.prev.forEach(([key, data]) => qc.setQueryData(key, data));
       }
-      toastBus.error("Failed to update blog post. Please try again.");
+      toastBus.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to update blog post. Please try again."
+      );
     },
   });
 };
@@ -174,13 +182,17 @@ export const useDeleteBlog = () => {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.blogs });
-      toastBus.success("Blog post deleted.");
+      toastBus.success("Blog post deleted successfully.");
     },
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
       if (ctx?.prev) {
         ctx.prev.forEach(([key, data]) => qc.setQueryData(key, data));
       }
-      toastBus.error("Failed to delete blog post. Please try again.");
+      toastBus.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to delete blog post. Please try again."
+      );
     },
   });
 };
@@ -286,11 +298,15 @@ export const useSaveNotification = () => {
         id ? "Announcement updated successfully!" : "Announcement published! 📢",
       );
     },
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
       if (ctx?.prev) {
         ctx.prev.forEach(([key, data]) => qc.setQueryData(key, data));
       }
-      toastBus.error("Failed to save announcement. Please try again.");
+      toastBus.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to save announcement. Please try again."
+      );
     },
   });
 };
@@ -326,13 +342,17 @@ export const useDeleteNotification = () => {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.notifications });
-      toastBus.success("Notification deleted.");
+      toastBus.success("Notification deleted successfully.");
     },
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
       if (ctx?.prev) {
         ctx.prev.forEach(([key, data]) => qc.setQueryData(key, data));
       }
-      toastBus.error("Failed to delete notification. Please try again.");
+      toastBus.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to delete notification. Please try again."
+      );
     },
   });
 };

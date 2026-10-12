@@ -16,6 +16,7 @@ import {
 } from "react-icons/fa";
 
 import { customFetch } from "@/lib/api";
+import { toast } from "@/lib/toast";
 
 interface ContactResponse {
   message: string;
@@ -40,9 +41,16 @@ export default function ContactUs() {
       });
       setResponse(data.message);
       setIsSuccess(data.success);
+      if (data.success) {
+        toast.success(data.message || "Message sent successfully! We'll be in touch soon.");
+      } else {
+        toast.error(data.message || "Failed to send message. Please try again.");
+      }
     } catch (err: any) {
-      setResponse(err.message || "Error sending contact message");
+      const msg = err.message || "Error sending contact message";
+      setResponse(msg);
       setIsSuccess(false);
+      toast.error(msg);
     }
 
     // Clear the form inputs after submission

@@ -24,6 +24,7 @@ import {
   LuLoader,
 } from "react-icons/lu";
 import { uploadImage } from "@/lib/upload";
+import { toast } from "@/lib/toast";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -84,12 +85,14 @@ function BlogForm({
     try {
       const url = await uploadImage(file);
       setCoverImage(url);
+      toast.success("Cover image uploaded and optimized successfully!");
     } catch (err: unknown) {
-      setError(
+      const msg =
         err instanceof Error
           ? err.message
-          : "Failed to upload cover image to Cloudinary"
-      );
+          : "Failed to upload cover image to Cloudinary";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsUploadingCover(false);
       e.target.value = "";
@@ -109,7 +112,9 @@ function BlogForm({
     if (e) e.preventDefault();
     if (isSaving) return;
     if (!title.trim()) {
-      setError("Please enter a title for your blog post.");
+      const msg = "Please enter a title for your blog post.";
+      setError(msg);
+      toast.error(msg);
       return;
     }
 

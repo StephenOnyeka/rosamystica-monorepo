@@ -7,6 +7,7 @@ import { useDeleteBlog } from "@/lib/queries";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Blog } from "@/lib/types";
 import { ThrottledButton } from "@/components/ThrottledButton";
+import { toast } from "@/lib/toast";
 import {
   LuCalendar,
   LuClock,
@@ -43,6 +44,7 @@ function BlogsDetails({ blog }: BlogsDetailsProps) {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(shareUrl);
       setCopied(true);
+      toast.success("Article link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
     }
   };

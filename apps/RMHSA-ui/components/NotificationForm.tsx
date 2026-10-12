@@ -13,6 +13,7 @@ import { LuPencil, LuSend, LuEye, LuCheck } from "react-icons/lu";
 import { NotificationBing } from "iconsax-reactjs";
 import { Geist } from "next/font/google";
 import { parseCleanHtml, stripHtmlTags } from "@/lib/utils";
+import { toast } from "@/lib/toast";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -65,7 +66,9 @@ function NotificationForm({
     if (isSaving) return;
 
     if (!title.trim()) {
-      setError("Please enter a title for your notification.");
+      const msg = "Please enter a title for your notification.";
+      setError(msg);
+      toast.error(msg);
       return;
     }
 

@@ -28,6 +28,7 @@ import Navbar from "@/components/Navbar";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import { useBlog, useDeleteBlog } from "@/lib/queries";
 import type { Blog } from "@/lib/types";
+import { toast } from "@/lib/toast";
 
 // Import Tiptap ProseMirror node styles to guarantee exact spacing, images, lists, and formatting as in the editor
 import "@/components/tiptap-node/blockquote-node/blockquote-node.scss";
@@ -81,6 +82,7 @@ export default function BlogPost({
     if (typeof window !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(window.location.href);
       setCopied(true);
+      toast.success("Article link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
     }
   };

@@ -1,7 +1,6 @@
-// Tiny toast bus — mutations emit events, the Toaster component listens.
-// No external library required.
+import { toast } from "sonner";
 
-export type ToastType = "success" | "error" | "info";
+export type ToastType = "success" | "error" | "info" | "warning";
 
 export interface ToastEvent {
   id: string;
@@ -9,21 +8,43 @@ export interface ToastEvent {
   message: string;
 }
 
-type Listener = (event: ToastEvent) => void;
-
-const listeners = new Set<Listener>();
-let counter = 0;
-
+/**
+ * Global Toast Helper powered by Sonner with richColors.
+ * Supports:
+ * - toast.success("Message")
+ * - toast.error("Message")
+ * - toast.info("Message")
+ * - toast.warning("Message")
+ * - toast.loading("Message")
+ * - toast.promise(promise, { loading, success, error })
+ */
 export const toastBus = {
-  subscribe(fn: Listener) {
-    listeners.add(fn);
-    return () => listeners.delete(fn);
+  success: (msg: string, description?: string) =>
+    toast.success(msg, description ? { description } : undefined),
+  error: (msg: string, description?: string) =>
+    toast.error(msg, description ? { description } : undefined),
+  info: (msg: string, description?: string) =>
+    toast.info(msg, description ? { description } : undefined),
+  warning: (msg: string, description?: string) =>
+    toast.warning(msg, description ? { description } : undefined),
+  emit: (type: ToastType, message: string) => {
+    switch (type) {
+      case "success":
+        toast.success(message);
+        break;
+      case "error":
+        toast.error(message);
+        break;
+      case "warning":
+        toast.warning(message);
+        break;
+      case "info":
+      default:
+        toast.info(message);
+        break;
+    }
   },
-  emit(type: ToastType, message: string) {
-    const event: ToastEvent = { id: `toast-${++counter}`, type, message };
-    listeners.forEach((fn) => fn(event));
-  },
-  success: (msg: string) => toastBus.emit("success", msg),
-  error: (msg: string) => toastBus.emit("error", msg),
-  info: (msg: string) => toastBus.emit("info", msg),
+  subscribe: () => () => {},
 };
+
+export { toast };

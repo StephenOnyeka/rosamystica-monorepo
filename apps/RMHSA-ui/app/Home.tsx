@@ -12,6 +12,7 @@ import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
 import { useSubscriptionsContext } from "@/hooks/useSubscriptionsContext";
 import { customFetch } from "@/lib/api";
+import { toast } from "@/lib/toast";
 import { BsBoxArrowUpRight } from "react-icons/bs";
 import type { Subscription } from "@/lib/types";
 import { ThrottledButton } from "@/components/ThrottledButton";
@@ -49,16 +50,20 @@ function Home1() {
         body: JSON.stringify(subscription),
       });
       setEmail("");
-      console.log("new subscription added", json);
       setMssg(json.mssg ?? null);
       dispatch({ type: "CREATE_SUBSCRIPTION", payload: json });
+      toast.success(json.mssg || "Subscribed successfully! Thank you for staying connected.");
     } catch (err: any) {
-      if (err.data?.error) {
-        setError(err.data.error);
-      } else if (err.data?.warn) {
+      if (err.data?.warn) {
         setWarn(err.data.warn);
+        toast.warning(err.data.warn);
+      } else if (err.data?.error) {
+        setError(err.data.error);
+        toast.error(err.data.error);
       } else {
-        setError(err.message || "Failed to subscribe");
+        const errorMsg = err.message || "Failed to subscribe";
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } finally {
       setIsSubscribing(false);
