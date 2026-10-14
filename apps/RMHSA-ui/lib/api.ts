@@ -12,6 +12,8 @@
 export interface ApiError extends Error {
   status?: number;
   data?: any;
+  isOffline?: boolean; // Browser could not reach the network at all
+  isTimeout?: boolean; // Request exceeded the timeout window
 }
 
 export interface CustomFetchOptions extends RequestInit {
@@ -20,6 +22,7 @@ export interface CustomFetchOptions extends RequestInit {
   token?: string; // Explicit auth token override
   skipDeduplication?: boolean; // Bypass in-flight & cooldown deduplication
   dedupWindowMs?: number; // Cooldown window for identical mutations (default: 800ms)
+  timeoutMs?: number; // Abort the request after this many ms (default: 15s)
 }
 
 interface CacheItem<T = any> {
@@ -33,6 +36,7 @@ interface CacheItem<T = any> {
 const DEFAULT_BASE_URL = "http://localhost:8080";
 const DEFAULT_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const DEFAULT_DEDUP_WINDOW_MS = 800; // 800 milliseconds
+const DEFAULT_TIMEOUT_MS = 15_000; // 15 seconds
 
 // ---- In-Memory Storage -----------------------------------------------------
 
@@ -217,6 +221,7 @@ export async function customFetch<T = any>(
     body,
     skipDeduplication = false,
     dedupWindowMs = DEFAULT_DEDUP_WINDOW_MS,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
     ...restOptions
   } = options;
 
@@ -253,10 +258,19 @@ export async function customFetch<T = any>(
     ...restOptions,
   };
 
-  // 4. Execution pipeline with lifecycle cleanup
+  // 4. Execution pipeline with timeout + lifecycle cleanup
   const execute = async (): Promise<T> => {
+    // Respect a caller-supplied signal; otherwise enforce our own timeout.
+    const controller = restOptions.signal ? null : new AbortController();
+    const timer = controller
+      ? setTimeout(() => controller.abort(), timeoutMs)
+      : null;
+
     try {
-      const response = await fetch(fullUrl, fetchOptions);
+      const response = await fetch(fullUrl, {
+        ...fetchOptions,
+        ...(controller ? { signal: controller.signal } : {}),
+      });
       const data = await parseResponsePayload(response);
 
       if (!response.ok) {
@@ -274,7 +288,10 @@ export async function customFetch<T = any>(
       }
 
       return data as T;
+    } catch (err) {
+      throw normalizeNetworkError(err, controller?.signal.aborted ?? false);
     } finally {
+      if (timer) clearTimeout(timer);
       inFlightRequests.delete(requestKey);
     }
   };
@@ -286,4 +303,66 @@ export async function customFetch<T = any>(
   }
 
   return await promise;
+}
+
+// ---- Error Normalization & Helpers ------------------------------------------
+
+/**
+ * Converts low-level fetch failures (TypeError: Failed to fetch, AbortError)
+ * into typed ApiErrors. HTTP errors already carry a status and pass through.
+ */
+function normalizeNetworkError(err: unknown, timedOut: boolean): unknown {
+  if (!(err instanceof Error)) return err;
+  if ((err as ApiError).status !== undefined) return err; // Real HTTP error
+
+  if (timedOut || err.name === "AbortError" || err.name === "TimeoutError") {
+    const e: ApiError = new Error("The request took too long to respond.");
+    e.isTimeout = true;
+    return e;
+  }
+
+  if (err instanceof TypeError) {
+    const e: ApiError = new Error("Unable to reach the server.");
+    e.isOffline = true;
+    return e;
+  }
+
+  return err;
+}
+
+/** True when the failure is a connectivity problem (no network / unreachable). */
+export function isOfflineError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  if ((err as ApiError).isOffline) return true;
+  return typeof navigator !== "undefined" && navigator.onLine === false;
+}
+
+/** True when the request was aborted for taking too long. */
+export function isTimeoutError(err: unknown): boolean {
+  return !!err && typeof err === "object" && !!(err as ApiError).isTimeout;
+}
+
+export function getErrorStatus(err: unknown): number | undefined {
+  return err && typeof err === "object"
+    ? (err as ApiError).status
+    : undefined;
+}
+
+/**
+ * Returns a short, human-friendly message that never leaks technical details
+ * such as "Failed to fetch" or stack traces to visitors.
+ */
+export function getFriendlyErrorMessage(err: unknown): string {
+  if (isOfflineError(err)) {
+    return "You appear to be offline. Please check your internet connection.";
+  }
+  if (isTimeoutError(err)) {
+    return "This is taking longer than usual. Your connection may be slow.";
+  }
+  const status = getErrorStatus(err);
+  if (status === 404) return "We couldn't find what you were looking for.";
+  if (status && status >= 500) {
+    return "Something went wrong on our side. Please try again shortly.";
+  }
+  return "We couldn't load this content right now. Please try again.";
 }

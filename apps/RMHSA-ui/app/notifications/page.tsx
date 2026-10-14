@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -12,6 +12,7 @@ import Loading from "@/components/loading";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Notification } from "@/lib/types";
 import { useNotifications } from "@/lib/queries";
+import ErrorState from "@/components/ErrorState";
 import { useIsMutating } from "@tanstack/react-query";
 import Modal from "@/components/Modal";
 import NotificationDetailModal from "@/components/NotificationDetailModal";
@@ -25,7 +26,6 @@ const NotificationForm = dynamic(
   { ssr: false },
 );
 
-
 function NotificationsContent() {
   const { isAdmin } = useAdminContext();
   const router = useRouter();
@@ -36,12 +36,16 @@ function NotificationsContent() {
   const postsPerPage = 5;
   const [filterType, setFilterType] = useState<string | null>(null);
 
-  const { data: notificationsData, isPending } = useNotifications(
-    currentPage,
-    postsPerPage,
-  );
+  const {
+    data: notificationsData,
+    isPending,
+    error,
+    refetch,
+    isFetching,
+  } = useNotifications(currentPage, postsPerPage);
   const notifications = notificationsData?.notifications;
   const totalPages = notificationsData?.totalPages ?? 0;
+
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingNotification, setEditingNotification] =
@@ -61,17 +65,12 @@ function NotificationsContent() {
     setIsSavingNotification(false);
   };
 
-  // Deep-linking handle for ?id= query param
-  useEffect(() => {
-    if (selectedId && notifications) {
-      const found = notifications.find(
-        (n) => (n.id || n._id) === selectedId,
-      );
-      if (found) {
-        setSelectedNotification(found);
-      }
-    }
-  }, [selectedId, notifications]);
+  // Deep-linking handle for ?id= query param derived during render
+  const activeNotification =
+    selectedNotification ??
+    (selectedId && notifications
+      ? (notifications.find((n) => (n.id || n._id) === selectedId) ?? null)
+      : null);
 
   if (isPending) return <Loading />;
 
@@ -96,7 +95,7 @@ function NotificationsContent() {
 
         {/* Header Section with Create Notification Action for Admins */}
         <div className="max-w-5xl mx-auto mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="">
+          <div>
             <h1 className="text-3xl font-bold text-gray-900 font-poppins mb-2">
               Rosa Mystica High School Announcements
             </h1>
@@ -118,7 +117,6 @@ function NotificationsContent() {
 
         {/* Filter Tabs */}
         <div className="max-w-5xl mx-auto my-6">
-          {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 flex gap-2 overflow-x-auto"> */}
           <div className="bg-white border-b-2 border-gray-200 p-2 flex gap-2 overflow-x-auto">
             <button
               onClick={() => setFilterType(null)}
@@ -160,10 +158,16 @@ function NotificationsContent() {
 
         {/* Main Content Area */}
         <div className="max-w-5xl mx-auto">
-          {/* Notifications List */}
-          {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"> */}
           <div className="bg-white rounded-xl">
-            {filteredNotifications.length === 0 ? (
+            {!notifications ? (
+              <ErrorState
+                error={error}
+                onRetry={() => refetch()}
+                isRetrying={isFetching}
+                backHref="/"
+                backLabel="Back to Home"
+              />
+            ) : filteredNotifications.length === 0 ? (
               <div className="text-center py-12">
                 <LuBell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg">No notifications yet</p>
@@ -278,7 +282,7 @@ function NotificationsContent() {
 
       {/* Modal for Viewing Notification Details */}
       <NotificationDetailModal
-        notification={selectedNotification}
+        notification={activeNotification}
         onClose={() => {
           setSelectedNotification(null);
           if (searchParams?.get("id")) {
@@ -291,11 +295,10 @@ function NotificationsContent() {
   );
 }
 
-export default function Notifications() {
+export default function NotificationsPage() {
   return (
     <Suspense fallback={<Loading />}>
       <NotificationsContent />
     </Suspense>
   );
 }
-

@@ -5,13 +5,16 @@ import { useBlogs } from "@/lib/queries";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { AddCircle } from "iconsax-reactjs";
 
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
 import BlogsDetails from "@/components/BlogsDetails";
-import { BlogListSkeleton, BlogsPageSkeleton } from "@/components/skeletons/BlogSkeleton";
+import ErrorState from "@/components/ErrorState";
+import {
+  BlogListSkeleton,
+  BlogsPageSkeleton,
+} from "@/components/skeletons/BlogSkeleton";
 import { LuPlus } from "react-icons/lu";
 
 function BlogsContent() {
@@ -22,7 +25,10 @@ function BlogsContent() {
   const currentPage = Number(page) || 1; // Ensure page is a number
   const postsPerPage = 5;
 
-  const { data, isPending } = useBlogs(currentPage, postsPerPage);
+  const { data, isPending, error, refetch, isFetching } = useBlogs(
+    currentPage,
+    postsPerPage
+  );
   const blogs = data?.blogs;
   const totalPages = data?.totalPages ?? 0;
 
@@ -36,33 +42,10 @@ function BlogsContent() {
         <br />
         <br />
 
-        {/* Page title + Create Blog button */}
-        {/* <div className="flex items-center justify-between mb-6 max-w-5xl mx-auto">
-          <h1 className="text-3xl font-bold font-poppins text-contingent">
-            Rosa Mystica High School Blog & News
-            <span className="block w-full h-0.5 bg-gray-300 mt-2 border border-primary"></span>
-          </h1>
-          
-
-          {isAdmin && (
-            <Link
-              href="/blogs/new"
-              className="inline-flex items-center gap-x-2 bg-contingent text-white text-sm font-medium px-4 py-2.5 rounded-sm hover:bg-contingent-2 transition-colors duration-200 group"
-            >
-              <AddCircle
-                size={18}
-                color="#ffffff"
-                variant="Bold"
-                className="group-hover:rotate-90 transition-transform duration-200"
-              />
-              Create Blog
-            </Link>
-          )}
-        </div> */}
         <div className="max-w-5xl mx-auto mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="">
+          <div>
             <h1 className="text-3xl font-bold text-gray-900 font-poppins mb-2">
-              Rosa Mystica High School Blog & News
+              Rosa Mystica High School Blog &amp; News
             </h1>
             <p className="text-gray-600">
               Stay updated with our latest blogs and news
@@ -83,10 +66,19 @@ function BlogsContent() {
         <div className="font-semibold w-full max-w-5xl mx-auto">
           {isPending ? (
             <BlogListSkeleton count={postsPerPage} />
+          ) : !blogs ? (
+            <ErrorState
+              error={error}
+              onRetry={() => refetch()}
+              isRetrying={isFetching}
+              backHref="/"
+              backLabel="Back to Home"
+            />
           ) : (
             <>
-              {blogs &&
-                blogs.map((blog) => <BlogsDetails key={blog.id} blog={blog} />)}
+              {blogs.map((blog) => (
+                <BlogsDetails key={blog.id} blog={blog} />
+              ))}
 
               {/* Pagination Controls */}
               <br />
@@ -118,7 +110,7 @@ function BlogsContent() {
   );
 }
 
-export default function Blogs() {
+export default function BlogsPage() {
   return (
     <Suspense fallback={<BlogsPageSkeleton />}>
       <BlogsContent />

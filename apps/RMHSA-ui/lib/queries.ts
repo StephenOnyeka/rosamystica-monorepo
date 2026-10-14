@@ -28,12 +28,18 @@ export interface BlogsResponse {
   totalPages: number;
 }
 
-export const useBlogs = (page: number, limit: number) =>
+export const useBlogs = (
+  page: number,
+  limit: number,
+  initialData?: BlogsResponse | null,
+) =>
   useQuery({
     queryKey: queryKeys.blogList(page, limit),
     queryFn: () =>
       customFetch<BlogsResponse>(`/api/blogs?page=${page}&limit=${limit}`),
     placeholderData: keepPreviousData,
+    initialData: initialData ?? undefined,
+    staleTime: 60_000, // Keep in memory for 1 minute so back navigation is instantaneous
   });
 
 export const useBlog = (id: string, initialData?: Blog | null) =>
@@ -41,6 +47,7 @@ export const useBlog = (id: string, initialData?: Blog | null) =>
     queryKey: queryKeys.blog(id),
     queryFn: () => customFetch<Blog>(`/api/blogs/${id}`),
     initialData: initialData ?? undefined,
+    staleTime: 60_000,
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
   });
@@ -204,7 +211,11 @@ export interface NotificationsResponse {
   totalPages: number;
 }
 
-export const useNotifications = (page: number, limit: number) =>
+export const useNotifications = (
+  page: number,
+  limit: number,
+  initialData?: NotificationsResponse | null,
+) =>
   useQuery({
     queryKey: queryKeys.notificationList(page, limit),
     queryFn: () =>
@@ -212,6 +223,8 @@ export const useNotifications = (page: number, limit: number) =>
         `/api/notifications?page=${page}&limit=${limit}`,
       ),
     placeholderData: keepPreviousData,
+    initialData: initialData ?? undefined,
+    staleTime: 60_000,
   });
 
 // Save (create or update) notification — optimistic patch/inject.

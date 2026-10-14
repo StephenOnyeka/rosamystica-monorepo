@@ -5,27 +5,17 @@ import {
   SITE_NAME,
   buildMetadata,
 } from "@/lib/seo";
-import type { Blog } from "@/lib/types";
+import { getBlogServer } from "@/lib/server-api";
 
 interface BlogPageProps {
   params: Promise<{ id: string }>;
-}
-
-import { customFetch } from "@/lib/api";
-
-async function getBlog(id: string): Promise<Blog | null> {
-  try {
-    return await customFetch<Blog>(`/api/blogs/${id}`, { skipCache: true });
-  } catch {
-    return null;
-  }
 }
 
 export async function generateMetadata({
   params,
 }: BlogPageProps): Promise<Metadata> {
   const { id } = await params;
-  const blog = await getBlog(id);
+  const blog = await getBlogServer(id);
 
   if (!blog) {
     return { title: `Blog - ${SITE_NAME}` };
@@ -44,6 +34,5 @@ export async function generateMetadata({
 
 export default async function BlogPage({ params }: BlogPageProps) {
   const { id } = await params;
-  const blog = await getBlog(id);
-  return <BlogPost id={id} initialBlog={blog} />;
+  return <BlogPost id={id} />;
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BlogPostSkeleton } from "@/components/skeletons/BlogSkeleton";
+import ErrorState from "@/components/ErrorState";
 import DOMPurify from "dompurify";
 import { Geist } from "next/font/google";
 
@@ -19,7 +20,6 @@ import {
   LuPencil,
   LuShare2,
   LuCheck,
-  LuRefreshCw,
 } from "react-icons/lu";
 import { ArrowLeft2 } from "iconsax-reactjs";
 import Topfile from "@/components/Topfile";
@@ -52,12 +52,9 @@ export default function BlogPost({
     isPending: loading,
     error: queryError,
     refetch,
+    isFetching,
   } = useBlog(id, initialBlog);
-  const error = queryError
-    ? queryError instanceof Error
-      ? queryError.message
-      : String(queryError)
-    : "";
+  const error = blog ? null : queryError;
   const [copied, setCopied] = useState(false);
   const { isAdmin } = useAdminContext();
   const deleteBlog = useDeleteBlog();
@@ -186,29 +183,23 @@ export default function BlogPost({
           </div>
 
           {error ? (
-            <div className="py-12 px-4 text-center bg-white rounded-2xl border border-gray-100 shadow-sm my-8">
-              <p className="text-red-500 font-semibold mb-2">{error}</p>
-              <p className="text-xs text-gray-500 mb-5">
-                Unable to load this article. The backend server might be restarting or unreachable.
-              </p>
-              <div className="flex items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => refetch()}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-contingent hover:bg-contingent-2 text-white rounded-lg text-sm font-medium transition-colors shadow-sm cursor-pointer"
-                >
-                  <LuRefreshCw className="w-4 h-4" />
-                  Retry
-                </button>
-                <Link
-                  href="/blogs"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
-                >
-                  <LuArrowLeft className="w-4 h-4" />
-                  Back to Blogs
-                </Link>
-              </div>
-            </div>
+            <ErrorState
+              error={error}
+              onRetry={() => refetch()}
+              isRetrying={isFetching}
+              title={
+                (error as { status?: number }).status === 404
+                  ? "Article not found"
+                  : undefined
+              }
+              message={
+                (error as { status?: number }).status === 404
+                  ? "This article may have been moved or removed."
+                  : undefined
+              }
+              backHref="/blogs"
+              backLabel="Back to Blogs"
+            />
           ) : !blog ? null : (
             /* Article card mirrors BlogForm preview mode exactly */
             <article className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-12">
