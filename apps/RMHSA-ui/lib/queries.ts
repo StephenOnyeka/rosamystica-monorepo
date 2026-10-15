@@ -149,6 +149,7 @@ export const useUpdateBlog = () => {
     onSuccess: (_data, { id }) => {
       qc.invalidateQueries({ queryKey: queryKeys.blogs });
       qc.invalidateQueries({ queryKey: queryKeys.blog(id) });
+      qc.invalidateQueries({ queryKey: queryKeys.notifications });
       toastBus.success("Blog post updated successfully!");
     },
     onError: (err, _vars, ctx) => {
@@ -164,7 +165,7 @@ export const useUpdateBlog = () => {
   });
 };
 
-// Delete blog — optimistic: remove instantly.
+// Delete blog — optimistic: remove instantly from both blogs and notifications.
 export const useDeleteBlog = () => {
   const qc = useQueryClient();
   return useMutation({
@@ -173,7 +174,15 @@ export const useDeleteBlog = () => {
       customFetch<Blog>(`/api/blogs/${id}`, { method: "DELETE" }),
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: queryKeys.blogs });
-      const prev = qc.getQueriesData<BlogsResponse>({ queryKey: queryKeys.blogs });
+      await qc.cancelQueries({ queryKey: queryKeys.notifications });
+      const prevBlogs = qc.getQueriesData<BlogsResponse>({
+        queryKey: queryKeys.blogs,
+      });
+      const prevNotifs = qc.getQueriesData<NotificationsResponse>({
+        queryKey: queryKeys.notifications,
+      });
+
+      // Remove from blogs cache
       qc.setQueriesData<BlogsResponse>(
         { queryKey: queryKeys.blogs },
         (old) =>
@@ -185,15 +194,38 @@ export const useDeleteBlog = () => {
               }
             : old,
       );
-      return { prev };
+
+      // Remove any notification linked to this deleted blog
+      qc.setQueriesData<NotificationsResponse>(
+        { queryKey: queryKeys.notifications },
+        (old) =>
+          old
+            ? {
+                ...old,
+                notifications: old.notifications.filter(
+                  (n) =>
+                    n.relatedBlogId !== id &&
+                    n.blogId !== id &&
+                    (n.id || n._id) !== id,
+                ),
+                totalPosts: Math.max(0, old.totalPosts - 1),
+              }
+            : old,
+      );
+
+      return { prevBlogs, prevNotifs };
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.blogs });
+      qc.invalidateQueries({ queryKey: queryKeys.notifications });
       toastBus.success("Blog post deleted successfully.");
     },
     onError: (err, _vars, ctx) => {
-      if (ctx?.prev) {
-        ctx.prev.forEach(([key, data]) => qc.setQueryData(key, data));
+      if (ctx?.prevBlogs) {
+        ctx.prevBlogs.forEach(([key, data]) => qc.setQueryData(key, data));
+      }
+      if (ctx?.prevNotifs) {
+        ctx.prevNotifs.forEach(([key, data]) => qc.setQueryData(key, data));
       }
       toastBus.error(
         err instanceof Error

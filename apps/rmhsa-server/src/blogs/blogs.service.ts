@@ -108,6 +108,15 @@ export class BlogsService {
 
     await this.blogRepository.delete(id);
 
+    // Delete any notifications associated with this blog
+    try {
+      await this.notificationsService.deleteByBlogId(id, blog.title);
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete notification for blog ${id}: ${String(error)}`,
+      );
+    }
+
     return blog;
   }
 
@@ -121,6 +130,17 @@ export class BlogsService {
     }
 
     Object.assign(blog, updateBlogDto);
-    return this.blogRepository.save(blog);
+    const updated = await this.blogRepository.save(blog);
+
+    // Keep associated notification in sync
+    try {
+      await this.notificationsService.updateByBlog(updated);
+    } catch (error) {
+      this.logger.error(
+        `Failed to update notification for blog ${id}: ${String(error)}`,
+      );
+    }
+
+    return updated;
   }
 }
