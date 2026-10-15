@@ -1,56 +1,36 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
+import { useBlogs } from "@/lib/queries";
+import { useAdminContext } from "@/hooks/useAdminContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { AddCircle } from "iconsax-reactjs";
 
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
 import BlogsDetails from "@/components/BlogsDetails";
-import Loading from "@/components/loading";
-import { useBlogsContext } from "@/hooks/useBlogsContext";
-import { useAdminContext } from "@/hooks/useAdminContext";
-import type { Blog } from "@/lib/types";
-import { customFetch } from "@/lib/api";
-
-interface BlogsApiResponse {
-  blogs: Blog[];
-  totalPosts: number;
-  totalPages: number;
-}
+import ErrorState from "@/components/ErrorState";
+import {
+  BlogListSkeleton,
+  BlogsPageSkeleton,
+} from "@/components/skeletons/BlogSkeleton";
+import { LuPlus } from "react-icons/lu";
 
 function BlogsContent() {
-  const { blogs, dispatch } = useBlogsContext();
   const { isAdmin } = useAdminContext();
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
   const page = searchParams?.get("page") ?? "1";
   const currentPage = Number(page) || 1; // Ensure page is a number
-  const [totalPages, setTotalPages] = useState(0);
   const postsPerPage = 5;
 
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const data = await customFetch<BlogsApiResponse>(
-          `/api/blogs?page=${currentPage}&limit=${postsPerPage}`,
-        );
-        setTotalPages(data.totalPages);
-        dispatch({ type: "SET_BLOGS", payload: data.blogs });
-      } catch (error) {
-        console.error("Failed to fetch blogs:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBlogs();
-  }, [dispatch, currentPage]); // Use currentPage here
-
-  if (loading) return <Loading />;
+  const { data, isPending, error, refetch, isFetching } = useBlogs(
+    currentPage,
+    postsPerPage
+  );
+  const blogs = data?.blogs;
+  const totalPages = data?.totalPages ?? 0;
 
   return (
     <div>
@@ -62,65 +42,77 @@ function BlogsContent() {
         <br />
         <br />
 
-        {/* Page title + Create Blog button */}
-        <div className="flex items-center justify-between mb-6 max-w-6xl mx-auto">
-          <h1 className="text-2xl font-bold text-contingent font-playfair">
-            Blog Posts
-          </h1>
+        <div className="max-w-5xl mx-auto mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 font-poppins mb-2">
+              Rosa Mystica High School Blog &amp; News
+            </h1>
+            <p className="text-gray-600">
+              Stay updated with our latest blogs and news
+            </p>
+          </div>
           {isAdmin && (
             <Link
               href="/blogs/new"
-              className="inline-flex items-center gap-x-2 bg-contingent text-white text-sm font-medium px-4 py-2.5 rounded-sm hover:bg-contingent-2 transition-colors duration-200 group"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-contingent hover:bg-contingent-2 text-white font-semibold rounded-xl shadow-sm transition-all cursor-pointer text-sm self-start md:self-auto"
             >
-              <AddCircle
-                size={18}
-                color="#ffffff"
-                variant="Bold"
-                className="group-hover:rotate-90 transition-transform duration-200"
-              />
+              <LuPlus className="w-5 h-5" />
               Create Blog
             </Link>
           )}
         </div>
 
         {/* Blog list */}
-        <div className="font-semibold w-full max-w-6xl mx-auto">
-          {blogs &&
-            blogs.map((blog, index) => (
-              <BlogsDetails key={blog.id || blog._id || index} blog={blog} />
-            ))}
+        <div className="font-semibold w-full max-w-5xl mx-auto">
+          {isPending ? (
+            <BlogListSkeleton count={postsPerPage} />
+          ) : !blogs ? (
+            <ErrorState
+              error={error}
+              onRetry={() => refetch()}
+              isRetrying={isFetching}
+              backHref="/"
+              backLabel="Back to Home"
+            />
+          ) : (
+            <>
+              {blogs.map((blog) => (
+                <BlogsDetails key={blog.id} blog={blog} />
+              ))}
 
-          {/* Pagination Controls */}
-          <br />
-          <br />
-          <div className="w-full flex justify-between mb-8">
-            <button
-              disabled={currentPage <= 1}
-              onClick={() => router.push(`/blogs?page=${currentPage - 1}`)}
-              className="bg-contingent text-sm text-white px-4 py-2 rounded disabled:bg-contingent/20"
-            >
-              Previous
-            </button>
-            <span>
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              disabled={currentPage >= totalPages}
-              onClick={() => router.push(`/blogs?page=${currentPage + 1}`)}
-              className="bg-contingent text-sm text-white px-4 py-2 rounded disabled:bg-contingent/20"
-            >
-              Next
-            </button>
-          </div>
+              {/* Pagination Controls */}
+              <br />
+              <br />
+              <div className="w-full flex justify-between mb-8">
+                <button
+                  disabled={currentPage <= 1}
+                  onClick={() => router.push(`/blogs?page=${currentPage - 1}`)}
+                  className="bg-contingent text-sm text-white px-4 py-2 rounded disabled:bg-contingent/20 cursor-pointer"
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  disabled={currentPage >= totalPages}
+                  onClick={() => router.push(`/blogs?page=${currentPage + 1}`)}
+                  className="bg-contingent text-sm text-white px-4 py-2 rounded disabled:bg-contingent/20 cursor-pointer"
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-export default function Blogs() {
+export default function BlogsPage() {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<BlogsPageSkeleton />}>
       <BlogsContent />
     </Suspense>
   );

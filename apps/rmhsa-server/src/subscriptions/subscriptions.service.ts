@@ -23,13 +23,6 @@ export class SubscriptionsService {
   ): Promise<{ mssg: string; subscription: Subscribe }> {
     const { email } = createSubscriptionDto;
 
-    // Validate the email format. Safety deviation: the legacy code ran the
-    // same check on the raw req.body value but crashed before reaching it
-    // when `email` was missing; answering 400 keeps the documented shape.
-    if (!email || !email.includes('@') || !email.includes('.com')) {
-      throw new BadRequestException({ error: 'Invalid email format' });
-    }
-
     // Check if the email already exists
     const existingSubscription = await this.subscribeRepository.findOne({
       where: { email },

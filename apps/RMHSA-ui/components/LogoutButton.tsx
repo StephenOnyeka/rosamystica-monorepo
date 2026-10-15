@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 
 import { customFetch } from "@/lib/api";
+import { toast } from "@/lib/toast";
 
 interface LogoutButtonProps {
   onLogout: () => void;
@@ -16,13 +17,10 @@ const LogoutButton = ({ onLogout }: LogoutButtonProps) => {
       await customFetch("/api/admin/logout", {
         method: "POST",
       });
-
-      localStorage.removeItem("token");
-      onLogout();
-      router.push("/admin");
+      toast.info("Signed out successfully.");
     } catch (error) {
       console.error("Logout error:", error);
-      localStorage.removeItem("token");
+    } finally {
       onLogout();
       router.push("/admin");
     }

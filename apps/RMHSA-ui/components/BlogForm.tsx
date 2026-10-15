@@ -2,12 +2,13 @@
 
 import { useState, useEffect, type SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
-import { useBlogsContext } from "@/hooks/useBlogsContext";
+// Migrated to TanStack Query hooks
+import { useCreateBlog, useUpdateBlog } from "@/lib/queries";
 import type { Blog } from "@/lib/types";
 import { Geist } from "next/font/google";
-import { customFetch } from "@/lib/api";
 import { SimpleEditor } from "./tiptap-templates/simple/simple-editor";
 import { ThrottledButton } from "@/components/ThrottledButton";
+import { useAdminContext } from "@/hooks/useAdminContext";
 import {
   LuImagePlus,
   LuImage,
@@ -20,7 +21,10 @@ import {
   LuEye,
   LuArrowLeft,
   LuCheck,
+  LuLoader,
 } from "react-icons/lu";
+import { uploadImage } from "@/lib/upload";
+import { toast } from "@/lib/toast";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -46,7 +50,7 @@ function BlogForm({
   const [coverImage, setCoverImage] = useState<string | null>(
     (initialData?.backgroundImage ||
       initialData?.coverImage ||
-      initialData?.image) as string | null
+      initialData?.image) as string | null,
   );
 
   useEffect(() => {
@@ -56,27 +60,42 @@ function BlogForm({
       setCoverImage(
         (initialData.backgroundImage ||
           initialData.coverImage ||
-          initialData.image) as string | null
+          initialData.image) as string | null,
       );
     }
   }, [initialData]);
 
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
-  const [token] = useState<string | null>(() => localStorage.getItem("token"));
-  const { dispatch } = useBlogsContext();
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const { isAdmin } = useAdminContext();
+  const createBlog = useCreateBlog();
+  const updateBlog = useUpdateBlog();
+  const isSaving = createBlog.isPending || updateBlog.isPending || isUploadingCover;
   const router = useRouter();
 
-  const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCoverImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === "string") {
-          setCoverImage(reader.result);
-        }
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    setError(null);
+    setIsUploadingCover(true);
+    try {
+      const url = await uploadImage(file);
+      setCoverImage(url);
+      toast.success("Cover image uploaded and optimized successfully!");
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Failed to upload cover image to Cloudinary";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setIsUploadingCover(false);
+      e.target.value = "";
     }
   };
 
@@ -91,8 +110,11 @@ function BlogForm({
     e?: SyntheticEvent<HTMLFormElement | HTMLButtonElement>,
   ) => {
     if (e) e.preventDefault();
+    if (isSaving) return;
     if (!title.trim()) {
-      setError("Please enter a title for your blog post.");
+      const msg = "Please enter a title for your blog post.";
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -107,80 +129,46 @@ function BlogForm({
 
     if (isEditing && initialData) {
       const targetId = initialData.id || initialData._id || "";
-      const updatedOptimistic: Blog = {
-        ...initialData,
-        ...blogPayload,
-      };
-
-      // 1. Optimistic UI update for Edit
-      dispatch({ type: "UPDATE_BLOG", payload: updatedOptimistic });
       setError(null);
-
-      if (redirectAfterSubmit) {
-        router.push(redirectAfterSubmit);
-      }
-
       try {
-        const json = await customFetch<Blog>(`/api/blogs/${targetId}`, {
-          method: "PATCH",
-          body: JSON.stringify(blogPayload),
-          token: token ?? undefined,
-        });
-        dispatch({ type: "UPDATE_BLOG", payload: json });
+        await updateBlog.mutateAsync({ id: targetId, payload: blogPayload });
+        if (redirectAfterSubmit) router.push(redirectAfterSubmit);
       } catch (err: unknown) {
-        // Rollback edit on error
-        dispatch({ type: "UPDATE_BLOG", payload: initialData });
         setError(
-          err instanceof Error ? err.message : "Failed to update blog post"
+          err instanceof Error ? err.message : "Failed to update blog post",
         );
       }
     } else {
-      // Creation flow
-      const tempId = `temp-${Date.now()}`;
-      const optimisticBlog: Blog = {
-        id: tempId,
-        _id: tempId,
-        ...blogPayload,
-        createdAt: new Date().toISOString(),
-      };
-
-      // 1. Optimistic UI add
-      dispatch({ type: "CREATE_BLOG", payload: optimisticBlog });
-
-      setTitle("");
-      setBody("");
-      setCoverImage(null);
       setError(null);
-
-      if (redirectAfterSubmit) {
-        router.push(redirectAfterSubmit);
-      }
-
       try {
-        const json = await customFetch<Blog>("/api/blogs", {
-          method: "POST",
-          body: JSON.stringify(blogPayload),
-          token: token ?? undefined,
-        });
-        dispatch({ type: "DELETE_BLOG", payload: optimisticBlog });
-        dispatch({ type: "CREATE_BLOG", payload: json });
+        await createBlog.mutateAsync(blogPayload);
+        setTitle("");
+        setBody("");
+        setCoverImage(null);
+        if (redirectAfterSubmit) router.push(redirectAfterSubmit);
       } catch (err: unknown) {
-        dispatch({ type: "DELETE_BLOG", payload: optimisticBlog });
         setError(
-          err instanceof Error ? err.message : "Failed to create blog post"
+          err instanceof Error ? err.message : "Failed to create blog post",
         );
       }
     }
   };
 
-  const handlePreviewToggle = () => setPreview((p) => !p);
+  const handlePreviewToggle = () => {
+    if (!preview && !title.trim()) {
+      setError("Please enter a title for your blog post before previewing.");
+      return;
+    }
+    setError(null);
+    setPreview((p) => !p);
+  };
 
   const defaultSubmitText = isEditing ? "Save" : "Publish";
   const actionButtonText = submitLabel || defaultSubmitText;
 
   return (
     <div className={geist.className}>
-      {token && (
+      {isAdmin && (
         <div>
           {preview ? (
             /* ── Enhanced Blog Preview Mode ── */
@@ -208,7 +196,8 @@ function BlogForm({
                   <ThrottledButton
                     type="button"
                     onClick={handleSubmit}
-                    loadingText="Saving..."
+                    isLoading={isSaving}
+                    loadingText={isEditing ? "Saving..." : "Publishing..."}
                     className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-sm"
                   >
                     <LuCheck className="w-4 h-4" />
@@ -262,7 +251,9 @@ function BlogForm({
                   <hr className="border-gray-200 mb-8" />
 
                   {/* Body HTML Content with Tiptap ProseMirror styling */}
-                  <div className={`tiptap ProseMirror simple-editor text-gray-900 leading-relaxed ${geist.className} [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-6`}>
+                  <div
+                    className={`tiptap ProseMirror simple-editor text-gray-900 leading-relaxed ${geist.className} [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-6`}
+                  >
                     <div
                       dangerouslySetInnerHTML={{
                         __html:
@@ -286,7 +277,8 @@ function BlogForm({
                   <ThrottledButton
                     type="button"
                     onClick={handleSubmit}
-                    loadingText="Saving..."
+                    isLoading={isSaving}
+                    loadingText={isEditing ? "Saving..." : "Publishing..."}
                     className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md"
                   >
                     <LuSend className="w-4 h-4" />
@@ -298,7 +290,10 @@ function BlogForm({
           ) : (
             /* ── Editor Form Mode ── */
             <form
-              onSubmit={handleSubmit}
+              onSubmit={(e) => {
+                e.preventDefault();
+                handlePreviewToggle();
+              }}
               className={`w-full pt-0 ${geist.className}`}
             >
               <div className="max-w-5xl mx-auto">
@@ -309,7 +304,17 @@ function BlogForm({
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Cover / Header Background Image
                   </label>
-                  {coverImage ? (
+                  {isUploadingCover ? (
+                    <div className="flex flex-col items-center justify-center w-full h-48 rounded-xl border-2 border-dashed border-contingent bg-contingent/5 p-6 text-center shadow-sm">
+                      <LuLoader className="w-8 h-8 text-contingent animate-spin mb-3" />
+                      <span className="text-sm font-semibold text-contingent">
+                        Uploading & optimizing image on Cloudinary...
+                      </span>
+                      <span className="text-xs text-gray-500 mt-1">
+                        Converting to auto WebP/AVIF format
+                      </span>
+                    </div>
+                  ) : coverImage ? (
                     <div className="relative group w-full h-64 md:h-72 rounded-xl overflow-hidden shadow-md border border-gray-200 bg-gray-900">
                       <img
                         src={coverImage}
@@ -346,7 +351,8 @@ function BlogForm({
                         Upload Cover / Background Image
                       </span>
                       <span className="text-xs text-gray-500 mt-1">
-                        Click to select a header background image (JPEG, PNG, WEBP)
+                        Click to select a header background image (JPEG, PNG,
+                        WEBP)
                       </span>
                       <input
                         type="file"
@@ -385,9 +391,11 @@ function BlogForm({
                 {/* Action Buttons */}
                 <div className="flex items-center gap-4 mb-8">
                   <ThrottledButton
-                    type="submit"
-                    loadingText="Saving..."
-                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md"
+                    type="button"
+                    onClick={handleSubmit}
+                    isLoading={isSaving}
+                    loadingText={isEditing ? "Saving..." : "Publishing..."}
+                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md cursor-pointer transition-all"
                   >
                     <LuSend className="w-4 h-4" />
                     {actionButtonText}

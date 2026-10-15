@@ -4,7 +4,14 @@ module.exports = {
   sitemapSize: 5000,
   changefreq: "daily",
   priority: 0.7,
-  exclude: ["/admin", "/api/*"],
+  exclude: [
+    "/admin",
+    "/admin/*",
+    "/api/*",
+    "/simple",
+    "/blogs/new",
+    "/blogs/*/edit",
+  ],
   additionalPaths: async (config) => [
     await config.transform(config, '/'),
     await config.transform(config, '/about'),
@@ -13,17 +20,40 @@ module.exports = {
     await config.transform(config, '/gallery'),
     await config.transform(config, '/school-life'),
     await config.transform(config, '/give-to-RMHS'),
+    await config.transform(config, '/blogs'),
+    await config.transform(config, '/notifications'),
   ],
   robotsTxtOptions: {
     policies: [
       { userAgent: "*", allow: "/" },
-      { userAgent: "*", disallow: ["/admin", "/api/"] },
+      {
+        userAgent: "*",
+        disallow: [
+          "/admin",
+          "/admin/*",
+          "/api/*",
+          "/simple",
+          "/blogs/new",
+          "/blogs/*/edit",
+        ],
+      },
     ],
     additionalSitemaps: [
       'https://www.rmhsagulu.com/sitemap.xml',
     ],
   },
   transform: async (config, path) => {
+    // Exclude internal/editor/admin routes
+    if (
+      path.startsWith("/admin") ||
+      path.startsWith("/api") ||
+      path === "/simple" ||
+      path === "/blogs/new" ||
+      path.endsWith("/edit")
+    ) {
+      return null;
+    }
+
     // Custom priority and changefreq for different pages
     const customConfig = {
       loc: path,

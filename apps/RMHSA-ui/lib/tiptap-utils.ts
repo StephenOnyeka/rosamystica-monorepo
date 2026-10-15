@@ -13,8 +13,9 @@ import {
   type Editor,
   type NodeWithPos,
 } from "@tiptap/react"
+import { uploadImage } from "@/lib/upload"
 
-export const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+export const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
 export const MAC_SYMBOLS: Record<string, string> = {
   mod: "⌘",
@@ -386,32 +387,9 @@ export const handleImageUpload = async (
     )
   }
 
-  onProgress?.({ progress: 50 })
-
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
-
-    if (abortSignal) {
-      abortSignal.addEventListener("abort", () => {
-        reader.abort()
-        reject(new Error("Upload cancelled"))
-      })
-    }
-
-    reader.onload = () => {
-      onProgress?.({ progress: 100 })
-      if (typeof reader.result === "string") {
-        resolve(reader.result)
-      } else {
-        reject(new Error("Failed to read image file"))
-      }
-    }
-
-    reader.onerror = () => {
-      reject(reader.error || new Error("Failed to read image file"))
-    }
-
-    reader.readAsDataURL(file)
+  return await uploadImage(file, {
+    onProgress: (percent) => onProgress?.({ progress: percent }),
+    signal: abortSignal,
   })
 }
 

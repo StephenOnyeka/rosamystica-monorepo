@@ -1,23 +1,23 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
 import Topfile from "@/components/Topfile";
 import NotificationsDetails from "@/components/NotificationDetail";
 import Loading from "@/components/loading";
-import { useNotificationsContext } from "@/hooks/useNotificationsContext";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Notification } from "@/lib/types";
-import { customFetch } from "@/lib/api";
+import { useNotifications } from "@/lib/queries";
+import ErrorState from "@/components/ErrorState";
+import { useIsMutating } from "@tanstack/react-query";
 import Modal from "@/components/Modal";
 import NotificationDetailModal from "@/components/NotificationDetailModal";
 import { ThrottledButton } from "@/components/ThrottledButton";
-import { LuBell, LuBriefcase, LuCircle, LuEye, LuFileText, LuFilter, LuList, LuPencil, LuPlus, LuSend } from "react-icons/lu";
+import { LuBell, LuEye, LuFileText, LuList, LuPencil, LuPlus, LuSend } from "react-icons/lu";
 import { NotificationBing } from "iconsax-reactjs";
 
 // Dynamically import NotificationForm with no SSR
@@ -26,24 +26,25 @@ const NotificationForm = dynamic(
   { ssr: false },
 );
 
-interface NotificationsApiResponse {
-  notifications: Notification[];
-  totalPosts: number;
-  totalPages: number;
-}
-
 function NotificationsContent() {
-  const { notifications, dispatch } = useNotificationsContext();
   const { isAdmin } = useAdminContext();
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
   const page = searchParams?.get("page") ?? "1";
   const selectedId = searchParams?.get("id");
   const currentPage = Number(page) || 1;
-  const [totalPages, setTotalPages] = useState(0);
   const postsPerPage = 5;
   const [filterType, setFilterType] = useState<string | null>(null);
+
+  const {
+    data: notificationsData,
+    isPending,
+    error,
+    refetch,
+    isFetching,
+  } = useNotifications(currentPage, postsPerPage);
+  const notifications = notificationsData?.notifications;
+  const totalPages = notificationsData?.totalPages ?? 0;
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -52,63 +53,35 @@ function NotificationsContent() {
   const [selectedNotification, setSelectedNotification] =
     useState<Notification | null>(null);
   const [isPreview, setIsPreview] = useState(false);
+  const [isSavingNotification, setIsSavingNotification] = useState(false);
+  const isMutatingNotification =
+    useIsMutating({ mutationKey: ["notifications", "save"] }) > 0;
+  const isNotificationSaving = isSavingNotification || isMutatingNotification;
 
   const handleCloseModal = () => {
     setIsCreateModalOpen(false);
     setEditingNotification(null);
     setIsPreview(false);
+    setIsSavingNotification(false);
   };
 
-  // Deep-linking handle for ?id= query param
-  useEffect(() => {
-    if (selectedId && notifications) {
-      const found = notifications.find(
-        (n) => (n.id || n._id) === selectedId,
-      );
-      if (found) {
-        setSelectedNotification(found);
-      }
-    }
-  }, [selectedId, notifications]);
+  // Deep-linking handle for ?id= query param derived during render
+  const activeNotification =
+    selectedNotification ??
+    (selectedId && notifications
+      ? (notifications.find((n) => (n.id || n._id) === selectedId) ?? null)
+      : null);
 
-  // Fetch notifications
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const data = await customFetch<NotificationsApiResponse>(
-          `/api/notifications?page=${currentPage}&limit=${postsPerPage}`,
-        );
-        setTotalPages(data.totalPages);
-        dispatch({ type: "SET_NOTIFICATIONS", payload: data.notifications });
-      } catch (error) {
-        console.error(
-          "Failed to fetch notifications, using dummy data:",
-          error,
-        );
-        const dummyData: NotificationsApiResponse = {
-          notifications: [],
-          totalPosts: 0,
-          totalPages: 1,
-        };
-        setTotalPages(1);
-        dispatch({
-          type: "SET_NOTIFICATIONS",
-          payload: dummyData.notifications,
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (isPending) return <Loading />;
 
-    fetchNotifications();
-  }, [dispatch, currentPage]);
-
-  if (loading) return <Loading />;
+  const allNotifications = (notifications || []).slice().sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 
   // Filter notifications based on selected type
   const filteredNotifications = filterType
-    ? notifications?.filter((n) => n.type === filterType) || []
-    : notifications || [];
+    ? allNotifications.filter((n) => n.type === filterType)
+    : allNotifications;
 
   return (
     <div className="pb-0">
@@ -121,10 +94,10 @@ function NotificationsContent() {
         <br />
 
         {/* Header Section with Create Notification Action for Admins */}
-        <div className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="max-w-5xl mx-auto mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 font-playfair mb-2">
-              Notifications
+            <h1 className="text-3xl font-bold text-gray-900 font-poppins mb-2">
+              Rosa Mystica High School Announcements
             </h1>
             <p className="text-gray-600">
               Stay updated with the latest announcements and updates from Rosa
@@ -143,8 +116,7 @@ function NotificationsContent() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="max-w-7xl mx-auto my-6">
-          {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 flex gap-2 overflow-x-auto"> */}
+        <div className="max-w-5xl mx-auto my-6">
           <div className="bg-white border-b-2 border-gray-200 p-2 flex gap-2 overflow-x-auto">
             <button
               onClick={() => setFilterType(null)}
@@ -186,10 +158,16 @@ function NotificationsContent() {
 
         {/* Main Content Area */}
         <div className="max-w-5xl mx-auto">
-          {/* Notifications List */}
-          {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"> */}
           <div className="bg-white rounded-xl">
-            {filteredNotifications.length === 0 ? (
+            {!notifications ? (
+              <ErrorState
+                error={error}
+                onRetry={() => refetch()}
+                isRetrying={isFetching}
+                backHref="/"
+                backLabel="Back to Home"
+              />
+            ) : filteredNotifications.length === 0 ? (
               <div className="text-center py-12">
                 <LuBell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg">No notifications yet</p>
@@ -279,6 +257,9 @@ function NotificationsContent() {
               <ThrottledButton
                 type="submit"
                 form="notification-form"
+                isLoading={isNotificationSaving}
+                loadingText={editingNotification ? "Updating..." : "Publishing..."}
+                disabled={isNotificationSaving}
                 className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-xl shadow-md transition-all cursor-pointer"
               >
                 <LuSend className="w-4 h-4" />
@@ -294,13 +275,14 @@ function NotificationsContent() {
             isPreview={isPreview}
             onTogglePreview={() => setIsPreview(!isPreview)}
             onClose={handleCloseModal}
+            onSavingChange={setIsSavingNotification}
           />
         </Modal>
       )}
 
       {/* Modal for Viewing Notification Details */}
       <NotificationDetailModal
-        notification={selectedNotification}
+        notification={activeNotification}
         onClose={() => {
           setSelectedNotification(null);
           if (searchParams?.get("id")) {
@@ -313,7 +295,7 @@ function NotificationsContent() {
   );
 }
 
-export default function Notifications() {
+export default function NotificationsPage() {
   return (
     <Suspense fallback={<Loading />}>
       <NotificationsContent />

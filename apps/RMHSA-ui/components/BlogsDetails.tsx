@@ -1,13 +1,13 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { useBlogsContext } from "@/hooks/useBlogsContext";
+import { useDeleteBlog } from "@/lib/queries";
 import { useAdminContext } from "@/hooks/useAdminContext";
 import type { Blog } from "@/lib/types";
-import { customFetch } from "@/lib/api";
 import { ThrottledButton } from "@/components/ThrottledButton";
+import { toast } from "@/lib/toast";
 import {
   LuCalendar,
   LuClock,
@@ -24,25 +24,17 @@ interface BlogsDetailsProps {
 }
 
 function BlogsDetails({ blog }: BlogsDetailsProps) {
-  const { dispatch } = useBlogsContext();
+  const deleteBlog = useDeleteBlog();
   const { isAdmin } = useAdminContext();
   const [copied, setCopied] = useState(false);
 
   const blogId = blog.id || blog._id || "";
 
-  const handleDelete = async () => {
-    // Optimistically remove from state
-    dispatch({ type: "DELETE_BLOG", payload: blog });
-
-    try {
-      await customFetch<Blog>(`/api/blogs/${blogId}`, {
-        method: "DELETE",
-      });
-    } catch (error) {
-      console.error("Failed to delete blog:", error);
-      // Rollback on failure
-      dispatch({ type: "CREATE_BLOG", payload: blog });
-    }
+  const handleDelete = () => {
+    if (deleteBlog.isPending) return;
+    deleteBlog.mutate(blogId, {
+      onError: (error) => console.error("Failed to delete blog:", error),
+    });
   };
 
   const handleShare = (e: React.MouseEvent) => {
@@ -52,6 +44,7 @@ function BlogsDetails({ blog }: BlogsDetailsProps) {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(shareUrl);
       setCopied(true);
+      toast.success("Article link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -198,6 +191,7 @@ function BlogsDetails({ blog }: BlogsDetailsProps) {
                   type="button"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 hover:text-white bg-red-50 hover:bg-red-500 rounded-lg transition-all border border-red-100"
                   onClick={handleDelete}
+                  isLoading={deleteBlog.isPending}
                   loadingText="Deleting..."
                   title="Delete Article"
                 >

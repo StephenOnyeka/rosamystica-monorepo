@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useRef, useCallback, type ButtonHTMLAttributes, type ReactNode } from "react";
+import {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  type ButtonHTMLAttributes,
+  type ReactNode,
+} from "react";
 import { CgSpinner } from "react-icons/cg";
 
 export interface ThrottledButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -31,6 +38,12 @@ export function ThrottledButton({
   const [isThrottled, setIsThrottled] = useState(false);
   const lastClickRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const handleClick = useCallback(
     async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -69,13 +82,25 @@ export function ThrottledButton({
           setInternalLoading(false);
         }
       } else if (props.form && type === "submit") {
-        const targetForm = document.getElementById(props.form) as HTMLFormElement | null;
+        e.preventDefault();
+        const targetForm = document.getElementById(
+          props.form,
+        ) as HTMLFormElement | null;
         if (targetForm) {
           targetForm.requestSubmit();
         }
       }
     },
-    [onClick, throttleMs, isThrottled, internalLoading, externalLoading, disabled, props.form, type]
+    [
+      onClick,
+      throttleMs,
+      isThrottled,
+      internalLoading,
+      externalLoading,
+      disabled,
+      props.form,
+      type,
+    ],
   );
 
   const showLoading = externalLoading || internalLoading;

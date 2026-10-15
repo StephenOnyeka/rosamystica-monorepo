@@ -16,6 +16,7 @@ import {
 } from "react-icons/fa";
 
 import { customFetch } from "@/lib/api";
+import { toast } from "@/lib/toast";
 
 interface ContactResponse {
   message: string;
@@ -40,9 +41,16 @@ export default function ContactUs() {
       });
       setResponse(data.message);
       setIsSuccess(data.success);
+      if (data.success) {
+        toast.success(data.message || "Message sent successfully! We'll be in touch soon.");
+      } else {
+        toast.error(data.message || "Failed to send message. Please try again.");
+      }
     } catch (err: any) {
-      setResponse(err.message || "Error sending contact message");
+      const msg = err.message || "Error sending contact message";
+      setResponse(msg);
       setIsSuccess(false);
+      toast.error(msg);
     }
 
     // Clear the form inputs after submission
@@ -78,9 +86,10 @@ export default function ContactUs() {
               <Navbar />
             </div>
             <div className="pt-[30%] pb-[5%] lg:pt-[25%] text-center flex-col">
-              <p className="text-6xl font-bold pb-3 max-md:text-5xl max-sm:text-3xl">
+              <h1 className="text-6xl font-bold pb-3 max-md:text-5xl max-sm:text-3xl">
                 Contact Us
-              </p>
+                <span className="sr-only"> — Rosa Mystica High School</span>
+              </h1>
               <p className="text-2xl max-md:text-xl max-sm:text-lg">
                 Get In Touch
               </p>

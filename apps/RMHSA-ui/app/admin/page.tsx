@@ -9,6 +9,7 @@ import LogoutButton from "@/components/LogoutButton";
 import { useAdminContext } from "@/hooks/useAdminContext";
 
 import { customFetch } from "@/lib/api";
+import { toast } from "@/lib/toast";
 
 export default function Admin() {
   const { isAdmin, verifyAdmin, signOut } = useAdminContext();
@@ -21,15 +22,17 @@ export default function Admin() {
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const data = await customFetch<{ token: string }>("/api/admin/login", {
+      await customFetch("/api/admin/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
-      localStorage.setItem("token", data.token);
-      await verifyAdmin(data.token);
+      await verifyAdmin();
+      toast.success("Welcome back, Administrator!");
       router.push("/");
     } catch (err: any) {
-      setError(err.message || "Login failed");
+      const msg = err.message || "Login failed. Please check your credentials.";
+      setError(msg);
+      toast.error(msg);
     }
   };
 
@@ -38,11 +41,10 @@ export default function Admin() {
       await customFetch("/api/admin/logout", {
         method: "POST",
       });
-      localStorage.removeItem("token");
-      signOut();
+      toast.info("You have been signed out.");
     } catch (error) {
       console.error("Logout error:", error);
-      localStorage.removeItem("token");
+    } finally {
       signOut();
     }
   };

@@ -41,8 +41,9 @@ export default function SchoolLife() {
             <div className="pt-[28%] pb-[5%] lg:pt-[30%] text-white">
               <div className="flex gap-16 max-md:flex-wrap max-md:content-center max-md:gap-0">
                 <div className="min-w-80">
-                  <div className="font-bold font-poppins text-4xl max-md:text-2xl">
+                  <h1 className="font-bold font-poppins text-4xl max-md:text-2xl">
                     Elevate Your Potential at Rosa Mystica
+                    <span className="sr-only"> High School</span>
                     <div className="flex content-center items-center justify-between pt-4">
                       <span className="element-divider-seperator flex w-5/6 border-2 border-primary"></span>
                       <span
@@ -65,7 +66,7 @@ export default function SchoolLife() {
                         )}
                       </span>
                     </div>
-                  </div>
+                  </h1>
                 </div>
                 <p className="text-lg leading-8 px-6 max-md:px-3 max-md:leading-6 max-md:text-sm max-sm:px-0 max-md:hidden">
                   Immerse yourself in a stimulating academic environment

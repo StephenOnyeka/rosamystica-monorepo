@@ -6,58 +6,58 @@ export const SITE_NAME = "Rosa Mystica High School";
 export const TWITTER_HANDLE = "@rosamysticahsa";
 
 export const DEFAULT_TITLE =
-  "Rosa Mystica High School - Excellence in Education Since 1966";
+  "Rosa Mystica High School | Best Catholic School for Girls in Nigeria";
 
 export const DEFAULT_DESCRIPTION =
-  "Welcome to Rosa Mystica High School, Agulu. Explore our academics, athletics, and facilities. Join us in shaping the future of education with our state-of-the-art facilities and inspiring faculty.";
+  "Rosa Mystica High School, Agulu is recognized among the best Catholic all-girls secondary schools in Nigeria. Offering academic excellence, moral discipline, and world-class boarding facilities since 1966.";
 
 export const DEFAULT_KEYWORDS =
-  "Rosa Mystica High School, Agulu, Nigeria, Secondary School, Education, Catholic School, Academic Excellence, Boarding School, Anambra State";
+  "Rosa Mystica, Rosa Mystica High School, Best School for Girls, Best School for Girls in Nigeria, Best Catholic School for Girls, All-Girls Secondary School Nigeria, Catholic Girls Boarding School, RMHS Agulu, Girls High School Agulu Anambra, Secondary School for Girls in Nigeria";
 
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/images/RMHS.jpg`;
 
 // Page-specific SEO configurations
 export const pageSEO = {
   home: {
-    title: "Rosa Mystica High School - Excellence in Education Since 1966",
+    title: "Rosa Mystica High School | Best Catholic School for Girls in Nigeria",
     description:
-      "Welcome to Rosa Mystica High School, Agulu. Explore our academics, athletics, and facilities. Join us in shaping the future of education with our state-of-the-art facilities and inspiring faculty.",
+      "Welcome to Rosa Mystica High School, Agulu. Recognized among the best Catholic schools for girls in Nigeria. Explore our academics, facilities, moral formation, and admissions.",
     canonical: "https://www.rmhsagulu.com",
   },
   about: {
-    title: "About Us - Rosa Mystica High School | Our History & Mission",
+    title: "About Us | Rosa Mystica High School - Premier Catholic School for Girls",
     description:
-      "Learn about Rosa Mystica High School's rich history since 1966, our mission, values, and commitment to academic excellence. Discover our state-of-the-art facilities and inspiring faculty.",
+      "Learn about the heritage of Rosa Mystica High School (formerly Girls' High School Agulu) founded in 1966. Discover why we are rated among the best Catholic schools for girls in Nigeria.",
     canonical: "https://www.rmhsagulu.com/about",
   },
   admission: {
-    title: "Admission - Apply to Rosa Mystica High School | Join Our Community",
+    title: "Admission | Enroll at Rosa Mystica High School - Best Girls School in Nigeria",
     description:
-      "Apply to Rosa Mystica High School and join our community of change-makers. Learn about our admission process, requirements, and how to become part of our legacy of excellence.",
+      "Apply for admission into Rosa Mystica High School Agulu. Join one of Nigeria's top Catholic boarding schools for girls. Entrance examination, fees, and requirements.",
     canonical: "https://www.rmhsagulu.com/admission",
   },
   contact: {
-    title: "Contact Us - Rosa Mystica High School | Get in Touch",
+    title: "Contact Us | Rosa Mystica High School, Agulu, Anambra State",
     description:
-      "Contact Rosa Mystica High School for admissions, tours, or general inquiries. Located in Agulu, Anambra State. Phone: +234-8076367903 | Email: rosamysticahsa@gmail.com",
+      "Get in touch with Rosa Mystica High School for admissions, tours, or general inquiries. Located in Agulu, Anambra State, Nigeria. Phone: +234-8076367903.",
     canonical: "https://www.rmhsagulu.com/contactUs",
   },
   gallery: {
-    title: "Gallery - Rosa Mystica High School | Campus Life & Facilities",
+    title: "Campus Gallery | Rosa Mystica High School Facilities & Student Life",
     description:
-      "Explore our campus through photos showcasing state-of-the-art facilities, student life, academic programs, and extracurricular activities at Rosa Mystica High School.",
+      "Explore campus facilities, modern laboratories, serene boarding hostels, and vibrant student life at Rosa Mystica High School, Agulu.",
     canonical: "https://www.rmhsagulu.com/gallery",
   },
   "school-life": {
-    title: "School Life - Rosa Mystica High School | Student Experience",
+    title: "School Life | Student Experience at Rosa Mystica High School",
     description:
-      "Discover student life at Rosa Mystica High School. Learn about our academic programs, extracurricular activities, sports, and vibrant campus community.",
+      "Discover life as a student at Rosa Mystica High School. Sports, arts, leadership development, moral formation, and academic activities for young women.",
     canonical: "https://www.rmhsagulu.com/school-life",
   },
   "give-to-RMHS": {
     title: "Support Rosa Mystica High School | Donate & Give Back",
     description:
-      "Support Rosa Mystica High School's mission of educational excellence. Your donations help us provide quality education and maintain our state-of-the-art facilities.",
+      "Support Rosa Mystica High School's mission of educational excellence for girls. Your donations help us maintain state-of-the-art facilities and scholarships.",
     canonical: "https://www.rmhsagulu.com/give-to-RMHS",
   },
 } as const;
@@ -149,17 +149,36 @@ export function pageMetadata(
   });
 }
 
-// JSON-LD Schema for Educational Organization
+// JSON-LD Schema for Educational Organization / School
 export const schoolSchema = {
   "@context": "https://schema.org",
-  "@type": "EducationalOrganization",
+  "@type": ["School", "EducationalOrganization"],
+  additionalType: "https://en.wikipedia.org/wiki/Catholic_school",
   name: "Rosa Mystica High School",
-  alternateName: "RMHS",
+  alternateName: [
+    "RMHS",
+    "Rosa Mystica",
+    "Girls' High School Agulu",
+    "Catholic Girls High School Agulu",
+  ],
   url: "https://www.rmhsagulu.com",
   logo: "https://www.rmhsagulu.com/images/RMHS.jpg",
+  image: "https://www.rmhsagulu.com/images/RMHS.jpg",
   description:
-    "Rosa Mystica High School is a Catholic secondary school in Agulu, Anambra State, Nigeria, committed to academic excellence and character development since 1966.",
+    "Rosa Mystica High School is a premier Catholic all-girls secondary boarding school in Agulu, Anambra State, Nigeria, renowned for academic excellence, moral formation, and character development since 1966.",
+  gender: "Female",
   foundingDate: "1966",
+  educationalLevel: [
+    "Junior Secondary School",
+    "Senior Secondary School",
+  ],
+  educationalCredentialAwarded: [
+    "WASSCE (WAEC)",
+    "SSCE (NECO)",
+    "BECE",
+  ],
+  keywords:
+    "Rosa Mystica, Rosa Mystica High School, Best School for Girls, Best School for Girls in Nigeria, Best Catholic School for Girls",
   address: {
     "@type": "PostalAddress",
     streetAddress: "426P+H48, Awka - Okigwe Rd, Nkitaku",
@@ -168,11 +187,17 @@ export const schoolSchema = {
     postalCode: "422109",
     addressCountry: "NG",
   },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: 6.1287,
+    longitude: 7.0658,
+  },
   contactPoint: {
     "@type": "ContactPoint",
     telephone: "+234-8076367903",
-    contactType: "Administration",
+    contactType: "Administration & Admissions",
     email: "rosamysticahsa@gmail.com",
+    availableLanguage: ["English", "Igbo"],
   },
   sameAs: [
     "https://facebook.com/Rmhsagulu",
@@ -182,23 +207,24 @@ export const schoolSchema = {
   ],
   hasOfferCatalog: {
     "@type": "OfferCatalog",
-    name: "Educational Programs",
+    name: "Educational Programs for Girls",
     itemListElement: [
       {
         "@type": "Offer",
         itemOffered: {
           "@type": "Course",
-          name: "Junior Secondary School",
-          description: "Comprehensive junior secondary education program",
+          name: "Junior Secondary School (JSS 1 - JSS 3)",
+          description:
+            "Foundational secondary education with strong emphasis on sciences, mathematics, arts, and moral discipline.",
         },
       },
       {
         "@type": "Offer",
         itemOffered: {
           "@type": "Course",
-          name: "Senior Secondary School",
+          name: "Senior Secondary School (SSS 1 - SSS 3)",
           description:
-            "Advanced senior secondary education with specialization options",
+            "Advanced preparation for WAEC and NECO across Sciences, Arts, and Commercial departments.",
         },
       },
     ],
@@ -271,3 +297,27 @@ export const faqSchema = (faqs: FaqItem[]) => ({
     },
   })),
 });
+
+// Default FAQ data targeting top queries for Google Rich Snippets
+export const defaultSchoolFaqs: FaqItem[] = [
+  {
+    question: "Is Rosa Mystica High School an all-girls school?",
+    answer:
+      "Yes, Rosa Mystica High School (formerly Girls' High School, Agulu) is a premier Catholic all-girls boarding secondary school located in Agulu, Anambra State, Nigeria, dedicated to female empowerment, discipline, and academic excellence.",
+  },
+  {
+    question: "What makes Rosa Mystica High School one of the best schools for girls in Nigeria?",
+    answer:
+      "Rosa Mystica High School provides top-tier academic training across Sciences, Arts, and Commercial departments, modern science laboratories, outstanding WAEC/NECO results, deep-rooted Catholic moral formation, and leadership development for young women.",
+  },
+  {
+    question: "Where is Rosa Mystica High School located in Nigeria?",
+    answer:
+      "Rosa Mystica High School is located in Agulu, Anaocha Local Government Area, Anambra State, Nigeria along the Awka - Okigwe Road.",
+  },
+  {
+    question: "How do prospective students apply for admission into Rosa Mystica High School?",
+    answer:
+      "Parents and guardians can apply online via the official website at https://www.rmhsagulu.com/admission or visit the school administrative office in Agulu for entrance examination dates and requirements.",
+  },
+];

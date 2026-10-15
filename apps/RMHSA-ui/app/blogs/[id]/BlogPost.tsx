@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Loading from "@/components/loading";
+import { BlogPostSkeleton } from "@/components/skeletons/BlogSkeleton";
+import ErrorState from "@/components/ErrorState";
 import DOMPurify from "dompurify";
 import { Geist } from "next/font/google";
 
 const geist = Geist({ subsets: ["latin"] });
 import { formatDistanceToNow } from "date-fns";
-import type { Blog } from "@/lib/types";
-import { customFetch } from "@/lib/api";
 import { ThrottledButton } from "@/components/ThrottledButton";
 import {
   LuUser,
@@ -27,7 +26,9 @@ import Topfile from "@/components/Topfile";
 import ScrollDiv from "@/components/Scroll";
 import Navbar from "@/components/Navbar";
 import { useAdminContext } from "@/hooks/useAdminContext";
-import { useBlogsContext } from "@/hooks/useBlogsContext";
+import { useBlog, useDeleteBlog } from "@/lib/queries";
+import type { Blog } from "@/lib/types";
+import { toast } from "@/lib/toast";
 
 // Import Tiptap ProseMirror node styles to guarantee exact spacing, images, lists, and formatting as in the editor
 import "@/components/tiptap-node/blockquote-node/blockquote-node.scss";
@@ -39,60 +40,46 @@ import "@/components/tiptap-node/heading-node/heading-node.scss";
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 import "@/components/tiptap-templates/simple/simple-editor.scss";
 
-export default function BlogPost({ id }: { id: string }) {
-  const [blog, setBlog] = useState<Blog | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+export default function BlogPost({
+  id,
+  initialBlog,
+}: {
+  id: string;
+  initialBlog?: Blog | null;
+}) {
+  const {
+    data: blog = initialBlog ?? null,
+    isPending: loading,
+    error: queryError,
+    refetch,
+    isFetching,
+  } = useBlog(id, initialBlog);
+  const error = blog ? null : queryError;
   const [copied, setCopied] = useState(false);
   const { isAdmin } = useAdminContext();
-  const { dispatch } = useBlogsContext();
+  const deleteBlog = useDeleteBlog();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchBlog = async () => {
-      try {
-        const data = await customFetch<Blog>(`/api/blogs/${id}`);
-        setBlog(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBlog();
-  }, [id]);
-
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (
       !blog ||
+      deleteBlog.isPending ||
       !window.confirm("Are you sure you want to delete this blog post?")
     )
       return;
 
     const blogId = blog.id || blog._id || id;
-    const targetBlog = blog;
-
-    // 1. Optimistic UI update — immediately delete from context & navigate
-    dispatch({ type: "DELETE_BLOG", payload: targetBlog });
-    router.push("/blogs");
-
-    try {
-      // 2. Perform background server delete
-      await customFetch<Blog>(`/api/blogs/${blogId}`, {
-        method: "DELETE",
-      });
-    } catch (err) {
-      console.error("Failed to delete blog:", err);
-      // 3. Rollback state if server deletion fails
-      dispatch({ type: "CREATE_BLOG", payload: targetBlog });
-    }
+    deleteBlog.mutate(blogId, {
+      onSuccess: () => router.push("/blogs"),
+      onError: (err) => console.error("Failed to delete blog:", err),
+    });
   };
 
   const handleShare = () => {
     if (typeof window !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(window.location.href);
       setCopied(true);
+      toast.success("Article link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -104,7 +91,7 @@ export default function BlogPost({ id }: { id: string }) {
     return `${minutes} min read`;
   };
 
-  if (loading) return <Loading />;
+  if (loading && !blog) return <BlogPostSkeleton />;
 
   const blogId = blog?.id || blog?._id || id;
 
@@ -182,6 +169,7 @@ export default function BlogPost({ id }: { id: string }) {
                   <ThrottledButton
                     type="button"
                     onClick={handleDelete}
+                    isLoading={deleteBlog.isPending}
                     loadingText="Deleting..."
                     className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg shadow-sm cursor-pointer"
                     title="Delete Article"
@@ -195,16 +183,23 @@ export default function BlogPost({ id }: { id: string }) {
           </div>
 
           {error ? (
-            <div className="py-12 px-4 text-center bg-white rounded-2xl border border-gray-100 shadow-sm my-8">
-              <p className="text-red-500 font-semibold mb-4">{error}</p>
-              <Link
-                href="/blogs"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
-              >
-                <LuArrowLeft className="w-4 h-4" />
-                Back to Blogs
-              </Link>
-            </div>
+            <ErrorState
+              error={error}
+              onRetry={() => refetch()}
+              isRetrying={isFetching}
+              title={
+                (error as { status?: number }).status === 404
+                  ? "Article not found"
+                  : undefined
+              }
+              message={
+                (error as { status?: number }).status === 404
+                  ? "This article may have been moved or removed."
+                  : undefined
+              }
+              backHref="/blogs"
+              backLabel="Back to Blogs"
+            />
           ) : !blog ? null : (
             /* Article card mirrors BlogForm preview mode exactly */
             <article className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-12">

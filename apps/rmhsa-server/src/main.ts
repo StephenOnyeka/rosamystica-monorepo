@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 // import { ConfigService } from '@nestjs/config';
@@ -13,9 +13,30 @@ async function bootstrap() {
   // (mirrors the legacy Express setup).
   const app = await NestFactory.create(AppModule, { bodyParser: false });
 
-  // Mirror the original Express middleware stack: open CORS, 200mb body
-  // limits, then a request logger (path + method).
-  app.enableCors();
+  // Global validation pipe using class-validator
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
+
+  // Open CORS with credentials for httpOnly cookie support
+  app.enableCors({
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('https://localhost:') ||
+        (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL)
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
+    credentials: true,
+  });
   app.use(json({ limit: '200mb' }));
   app.use(urlencoded({ limit: '200mb', extended: true }));
   app.use((req: Request, _res: Response, next: NextFunction) => {

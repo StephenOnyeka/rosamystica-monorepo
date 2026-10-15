@@ -5,16 +5,15 @@ import { useState, useEffect, type SyntheticEvent } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import "react-quill-new/dist/quill.bubble.css";
-import { useNotificationsContext } from "@/hooks/useNotificationsContext";
+import { useSaveNotification } from "@/lib/queries";
 import type { Notification } from "@/lib/types";
 
-import { customFetch } from "@/lib/api";
 import { ThrottledButton } from "@/components/ThrottledButton";
-import { LuPencil, LuSend, LuEye, LuCheck, LuBell } from "react-icons/lu";
+import { LuPencil, LuSend, LuEye, LuCheck } from "react-icons/lu";
 import { NotificationBing } from "iconsax-reactjs";
 import { Geist } from "next/font/google";
-import { cleanHtmlContent, parseCleanHtml, stripHtmlTags } from "@/lib/utils";
-
+import { parseCleanHtml, stripHtmlTags } from "@/lib/utils";
+import { toast } from "@/lib/toast";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -26,6 +25,7 @@ interface NotificationFormProps {
   hideFooterButtons?: boolean;
   isPreview?: boolean;
   onTogglePreview?: () => void;
+  onSavingChange?: (isSaving: boolean) => void;
 }
 
 function NotificationForm({
@@ -34,23 +34,21 @@ function NotificationForm({
   hideFooterButtons = false,
   isPreview: controlledIsPreview,
   onTogglePreview,
+  onSavingChange,
 }: NotificationFormProps) {
   const isEditing = Boolean(initialData && (initialData.id || initialData._id));
-  const { dispatch } = useNotificationsContext();
+  const saveNotification = useSaveNotification();
+  const isSaving = saveNotification.isPending;
   const [title, setTitle] = useState(initialData?.title ?? "");
   const [desc, setDesc] = useState(initialData?.desc ?? "");
   const [body, setBody] = useState(initialData?.body ?? "");
   const [error, setError] = useState<string | null>(null);
-  const [emptyFields, setEmptyFields] = useState<string[]>([]);
   const [internalPreview, setInternalPreview] = useState(false);
-  const preview = controlledIsPreview !== undefined ? controlledIsPreview : internalPreview;
-  const [token, setToken] = useState<string | null>(null);
-
+  const preview =
+    controlledIsPreview !== undefined ? controlledIsPreview : internalPreview;
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setToken(localStorage.getItem("token"));
-    }
-  }, []);
+    onSavingChange?.(isSaving);
+  }, [isSaving, onSavingChange]);
 
   useEffect(() => {
     if (initialData) {
@@ -65,8 +63,12 @@ function NotificationForm({
   ) => {
     e?.preventDefault();
 
+    if (isSaving) return;
+
     if (!title.trim()) {
-      setError("Please enter a title for your notification.");
+      const msg = "Please enter a title for your notification.";
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -81,43 +83,31 @@ function NotificationForm({
       title,
       desc: generatedDesc,
       body,
-      type: initialData?.type || "manual",
+      type: "manual",
     };
 
-    if (isEditing && initialData) {
-      const targetId = initialData.id || initialData._id || "";
-      try {
-        const json = await customFetch<Notification>(
-          `/api/notifications/${targetId}`,
-          {
-            method: "PATCH",
-            body: JSON.stringify(notificationPayload),
-            token: token ?? undefined,
-          },
-        );
-        setError(null);
-        dispatch({ type: "UPDATE_NOTIFICATION", payload: json });
-        onClose?.();
-      } catch (err: any) {
-        setError(err.message || "Failed to update notification");
-      }
-    } else {
-      try {
-        const json = await customFetch<Notification>("/api/notifications", {
-          method: "POST",
-          body: JSON.stringify(notificationPayload),
-          token: token ?? undefined,
-        });
+    const targetId = isEditing
+      ? initialData?.id || initialData?._id || ""
+      : undefined;
+    try {
+      await saveNotification.mutateAsync({
+        id: targetId,
+        payload: notificationPayload,
+      });
+      setError(null);
+      if (!isEditing) {
         setTitle("");
         setDesc("");
         setBody("");
-        setError(null);
-        setEmptyFields([]);
-        dispatch({ type: "CREATE_NOTIFICATION", payload: json });
-        onClose?.();
-      } catch (err: any) {
-        setError(err.message || "Failed to create notification");
       }
+      onClose?.();
+    } catch (err: any) {
+      setError(
+        err.message ||
+          (isEditing
+            ? "Failed to update notification"
+            : "Failed to create notification"),
+      );
     }
   };
 
@@ -138,7 +128,11 @@ function NotificationForm({
   };
 
   return (
-    <form id="notification-form" onSubmit={handleSubmit} className={geist.className}>
+    <form
+      id="notification-form"
+      onSubmit={handleSubmit}
+      className={geist.className}
+    >
       {preview ? (
         /* ── Enhanced Notification Preview Mode ── */
         <div className="py-6 px-2 max-w-4xl mx-auto">
@@ -164,13 +158,14 @@ function NotificationForm({
                   Back to Edit
                 </button>
                 <ThrottledButton
-                  type="submit"
+                  type="button"
                   onClick={handleSubmit}
-                  loadingText="Publishing..."
+                  isLoading={isSaving}
+                  loadingText={isEditing ? "Updating..." : "Publishing..."}
                   className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-sm"
                 >
                   <LuCheck className="w-4 h-4" />
-                  Publish Notification
+                  {isEditing ? "Update Notification" : "Publish Notification"}
                 </ThrottledButton>
               </div>
             </div>
@@ -195,19 +190,11 @@ function NotificationForm({
                 <p className="text-sm text-gray-600 mt-1.5">
                   {getPreviewText()}
                 </p>
-
-                {/* Clean rendered content preview with proper styling */}
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 prose prose-sm max-w-none">
-                  {parseCleanHtml(body)}
-                </div>
-
-                {/* Type badge */}
-                <div className="mt-4">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                    Manual Announcement
-                  </span>
-                </div>
               </div>
+            </div>
+            {/* Clean rendered content preview with proper styling */}
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 prose prose-sm max-sm:prose-xs max-w-none">
+              {parseCleanHtml(body)}
             </div>
           </div>
         </div>
@@ -270,7 +257,9 @@ function NotificationForm({
             {!hideFooterButtons && (
               <div className="flex items-center gap-4 mb-8">
                 <ThrottledButton
-                  type="submit"
+                  type="button"
+                  onClick={handleSubmit}
+                  isLoading={isSaving}
                   loadingText={isEditing ? "Updating..." : "Publishing..."}
                   className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md"
                 >

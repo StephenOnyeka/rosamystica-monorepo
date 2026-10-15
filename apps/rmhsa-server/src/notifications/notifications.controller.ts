@@ -1,11 +1,11 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   HttpCode,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -58,7 +58,9 @@ export class NotificationsController {
     description: 'Return the specified notification.',
   })
   @ApiResponse({ status: 404, description: 'Notification not found.' })
-  getNotification(@Param('id') id: string) {
+  getNotification(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
     return this.notificationsService.getNotification(id);
   }
 
@@ -72,25 +74,6 @@ export class NotificationsController {
     description: 'Notification created successfully.',
   })
   createNotification(@Body() createNotificationDto: CreateNotificationDto) {
-    const emptyFields: string[] = [];
-
-    if (!createNotificationDto.title) {
-      emptyFields.push('title');
-    }
-    if (!createNotificationDto.desc) {
-      emptyFields.push('desc');
-    }
-    if (!createNotificationDto.body) {
-      emptyFields.push('body');
-    }
-
-    if (emptyFields.length > 0) {
-      throw new BadRequestException({
-        error: 'Please fill in all the fields',
-        emptyFields,
-      });
-    }
-
     return this.notificationsService.createNotification(createNotificationDto);
   }
 
@@ -103,7 +86,9 @@ export class NotificationsController {
     description: 'Notification deleted successfully.',
   })
   @ApiResponse({ status: 404, description: 'Notification not found.' })
-  deleteNotification(@Param('id') id: string) {
+  deleteNotification(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
     return this.notificationsService.deleteNotification(id);
   }
 
@@ -117,7 +102,7 @@ export class NotificationsController {
   })
   @ApiResponse({ status: 404, description: 'Notification not found.' })
   updateNotification(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateNotificationDto: UpdateNotificationDto,
   ) {
     return this.notificationsService.updateNotification(
