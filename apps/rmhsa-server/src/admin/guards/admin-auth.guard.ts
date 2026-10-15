@@ -7,15 +7,19 @@ import {
 import type { Request } from 'express';
 import { AdminService } from '../admin.service';
 
+type SafeRequest = Omit<Request, 'cookies'> & {
+  cookies?: Record<string, string | undefined>;
+};
+
 // Ported from the token checks in routes/admin.js and blogController.js.
 @Injectable()
 export class AdminAuthGuard implements CanActivate {
   constructor(private readonly adminService: AdminService) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<SafeRequest>();
     const cookieToken =
-      (request as any).cookies?.token ||
+      request.cookies?.token ||
       this.extractCookie(request.headers.cookie, 'token');
     const bearerToken = request.headers.authorization?.split(' ')[1];
     const token = cookieToken || bearerToken;

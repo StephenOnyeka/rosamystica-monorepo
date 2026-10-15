@@ -23,7 +23,10 @@ async function bootstrap() {
 
   // Open CORS with credentials for httpOnly cookie support
   app.enableCors({
-    origin: (origin, callback) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       if (
         !origin ||
         origin.startsWith('http://localhost:') ||
