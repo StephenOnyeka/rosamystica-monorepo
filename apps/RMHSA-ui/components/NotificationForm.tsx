@@ -5,7 +5,8 @@ import { useState, useEffect, type SyntheticEvent } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import "react-quill-new/dist/quill.bubble.css";
-import { useSaveNotification } from "@/lib/queries";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSaveNotification, queryKeys, type NotificationsResponse } from "@/lib/queries";
 import type { Notification } from "@/lib/types";
 
 import { ThrottledButton } from "@/components/ThrottledButton";
@@ -36,9 +37,11 @@ function NotificationForm({
   onTogglePreview,
   onSavingChange,
 }: NotificationFormProps) {
+  const qc = useQueryClient();
   const isEditing = Boolean(initialData && (initialData.id || initialData._id));
   const saveNotification = useSaveNotification();
-  const isSaving = saveNotification.isPending;
+  const [isVerifying, setIsVerifying] = useState(false);
+  const isSaving = saveNotification.isPending || isVerifying;
   const [title, setTitle] = useState(initialData?.title ?? "");
   const [desc, setDesc] = useState(initialData?.desc ?? "");
   const [body, setBody] = useState(initialData?.body ?? "");
@@ -102,6 +105,37 @@ function NotificationForm({
       }
       onClose?.();
     } catch (err: any) {
+      const isTimeout =
+        err?.isTimeout ||
+        (typeof err?.message === "string" &&
+          (err.message.includes("took too long") ||
+            err.message.toLowerCase().includes("timeout")));
+
+      if (isTimeout && !isEditing) {
+        setIsVerifying(true);
+        setError("Request timed out. Verifying if notification was already published...");
+        try {
+          await qc.invalidateQueries({ queryKey: queryKeys.notifications });
+          const cached = qc.getQueryData<NotificationsResponse>(queryKeys.notifications);
+          const matched = cached?.notifications?.find(
+            (n) => n.title.trim().toLowerCase() === title.trim().toLowerCase(),
+          );
+          if (matched) {
+            toast.success("Notification was published successfully!");
+            setError(null);
+            setTitle("");
+            setDesc("");
+            setBody("");
+            onClose?.();
+            return;
+          }
+        } catch {
+          // ignore verification check failure, fallback to error message
+        } finally {
+          setIsVerifying(false);
+        }
+      }
+
       setError(
         err.message ||
           (isEditing
@@ -161,7 +195,13 @@ function NotificationForm({
                   type="button"
                   onClick={handleSubmit}
                   isLoading={isSaving}
-                  loadingText={isEditing ? "Updating..." : "Publishing..."}
+                  loadingText={
+                    isVerifying
+                      ? "Verifying..."
+                      : isEditing
+                      ? "Updating..."
+                      : "Publishing..."
+                  }
                   className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-sm"
                 >
                   <LuCheck className="w-4 h-4" />
@@ -260,7 +300,13 @@ function NotificationForm({
                   type="button"
                   onClick={handleSubmit}
                   isLoading={isSaving}
-                  loadingText={isEditing ? "Updating..." : "Publishing..."}
+                  loadingText={
+                    isVerifying
+                      ? "Verifying..."
+                      : isEditing
+                      ? "Updating..."
+                      : "Publishing..."
+                  }
                   className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-contingent hover:bg-contingent-2 rounded-lg shadow-md"
                 >
                   <LuSend className="w-4 h-4" />

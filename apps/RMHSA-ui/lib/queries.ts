@@ -61,6 +61,7 @@ export const useCreateBlog = () => {
       customFetch<Blog>("/api/blogs", {
         method: "POST",
         body: JSON.stringify(payload),
+        timeoutMs: 45_000,
       }),
     onMutate: async (payload) => {
       await qc.cancelQueries({ queryKey: queryKeys.blogs });
@@ -276,6 +277,7 @@ export const useSaveNotification = () => {
         {
           method: id ? "PATCH" : "POST",
           body: JSON.stringify(payload),
+          timeoutMs: 45_000,
         },
       ),
     onMutate: async ({ id, payload }) => {

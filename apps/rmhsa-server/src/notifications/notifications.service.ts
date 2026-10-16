@@ -109,12 +109,22 @@ export class NotificationsService implements OnApplicationBootstrap {
       relatedBlogId: blog.id,
     });
 
-    const subscribers = await this.subscribeRepository.find();
-    const subscriberEmails = subscribers
-      .map((sub) => sub.email)
-      .filter((email): email is string => !!email);
-
-    await this.mailService.sendBlogNotification(subscriberEmails, blog);
+    // Dispatch email notification in background without blocking HTTP response
+    this.subscribeRepository
+      .find()
+      .then((subscribers) => {
+        const subscriberEmails = subscribers
+          .map((sub) => sub.email)
+          .filter((email): email is string => !!email);
+        if (subscriberEmails.length > 0) {
+          return this.mailService.sendBlogNotification(subscriberEmails, blog);
+        }
+      })
+      .catch((mailErr) => {
+        this.logger.error(
+          `Failed to send blog notification emails in background: ${String(mailErr)}`,
+        );
+      });
 
     return notification;
   }
@@ -173,17 +183,25 @@ export class NotificationsService implements OnApplicationBootstrap {
         relatedBlogId,
       });
 
-      // Fetch subscribers' emails
-      const subscribers = await this.subscribeRepository.find();
-      const subscriberEmails = subscribers
-        .map((sub) => sub.email)
-        .filter((email): email is string => !!email);
-
-      // Send email notification
-      await this.mailService.sendNotificationNotification(
-        subscriberEmails,
-        notification,
-      );
+      // Dispatch email notification in background without blocking HTTP response
+      this.subscribeRepository
+        .find()
+        .then((subscribers) => {
+          const subscriberEmails = subscribers
+            .map((sub) => sub.email)
+            .filter((email): email is string => !!email);
+          if (subscriberEmails.length > 0) {
+            return this.mailService.sendNotificationNotification(
+              subscriberEmails,
+              notification,
+            );
+          }
+        })
+        .catch((mailErr) => {
+          this.logger.error(
+            `Failed to send notification emails in background: ${String(mailErr)}`,
+          );
+        });
 
       return notification;
     } catch (error) {
