@@ -33,8 +33,7 @@ interface CacheItem<T = any> {
 
 // ---- Constants --------------------------------------------------------------
 
-const DEFAULT_BASE_URL = process.env.NODE_ENV === "production" ? "" : "https://rosamystica-monorepo.onrender.com";
-// const DEFAULT_BASE_URL = process.env.API_URL;
+const DEFAULT_BASE_URL = "https://rosamystica-monorepo.onrender.com";
 const DEFAULT_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const DEFAULT_DEDUP_WINDOW_MS = 800; // 800 milliseconds
 const DEFAULT_TIMEOUT_MS = 15_000; // 15 seconds
@@ -48,7 +47,10 @@ const recentMutations = new Map<string, { data: any; timestamp: number }>();
 // ---- URL Helpers -----------------------------------------------------------
 
 export function getBaseApiUrl(): string {
-  const url = process.env.API_URL || DEFAULT_BASE_URL;
+  const url =
+    process.env.NEXT_PUBLIC_API_URL ||
+    process.env.API_URL ||
+    DEFAULT_BASE_URL;
   return url ? url.replace(/\/+$/, "") : "";
 }
 
