@@ -413,12 +413,13 @@ function Home1() {
                       <br />
                       <hr />
                       <li className="mt-4">
-                        <Link
+                        <a
                           href="/PDF/THIRD TERM CALENDAR FOR 2026.pdf"
                           target="_blank"
+                          rel="noopener noreferrer"
                         >
                           Academic Calendar
-                        </Link>
+                        </a>
                       </li>
                       <br /> <hr />
                       <li className="mt-4">

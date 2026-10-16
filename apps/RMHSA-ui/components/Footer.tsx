@@ -107,12 +107,13 @@ function Footer() {
                   </Link>
                 </li>
                 <li className="hover:text-white transition-all duration-200 ease-in">
-                  <Link
+                  <a
                     href="/PDF/THIRD TERM CALENDAR FOR 2026.pdf"
                     target="_blank"
+                    rel="noopener noreferrer"
                   >
                     Academic Calendar
-                  </Link>
+                  </a>
                 </li>
                 <li className="hover:text-white transition-all duration-200 ease-in">
                   <Link href="">Pay My Tuition</Link>

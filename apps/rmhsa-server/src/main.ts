@@ -31,7 +31,11 @@ async function bootstrap() {
         !origin ||
         origin.startsWith('http://localhost:') ||
         origin.startsWith('https://localhost:') ||
-        (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL)
+        origin === 'https://www.rmhsagulu.com' ||
+        origin === 'https://rmhsagulu.com' ||
+        (process.env.FRONTEND_URL &&
+          (origin === process.env.FRONTEND_URL ||
+            origin === process.env.FRONTEND_URL.replace(/\/+$/, '')))
       ) {
         callback(null, true);
       } else {
