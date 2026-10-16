@@ -19,7 +19,7 @@ const config = new DocumentBuilder()
   )
   .setVersion('1.0')
   .addTag('admin', 'Admin authentication and management endpoints')
-  .addTag('blogs', 'Blog post management posts management endpoints')
+  .addTag('blogs', 'Blog post management endpoints')
   .addTag('notifications', 'Notification management endpoints')
   .addTag('subscriptions', 'User subscription management endpoints')
   .addTag('contact', 'Contact form submission endpoint')
@@ -50,7 +50,7 @@ SwaggerModule.setup('api-docs', app, document);
 
 **DTO Documentation**:
 
-- `LoginDto`: username, password fields documented
+- `LoginDto`: email, password fields (both required)
 
 #### ✍️ Blogs Module (`/api/blogs`)
 
@@ -69,8 +69,8 @@ SwaggerModule.setup('api-docs', app, document);
 
 **DTO Documentation**:
 
-- `CreateBlogDto`: title, desc, body (all required)
-- `UpdateBlogDto`: title, desc, body (all optional)
+- `CreateBlogDto`: title, desc, body (required); image, coverImage, backgroundImage (optional)
+- `UpdateBlogDto`: title, desc, body, image, coverImage, backgroundImage (all optional)
 
 #### 🔔 Notifications Module (`/api/notifications`)
 
@@ -89,8 +89,8 @@ SwaggerModule.setup('api-docs', app, document);
 
 **DTO Documentation**:
 
-- `CreateNotificationDto`: title, desc, body (all required)
-- `UpdateNotificationDto`: title, desc, body (all optional)
+- `CreateNotificationDto`: title (required); desc, body, type, relatedBlogId (optional)
+- `UpdateNotificationDto`: title, desc, body, type, relatedBlogId (all optional)
 
 #### 💌 Subscriptions Module (`/api/subscriptions`)
 
@@ -111,7 +111,7 @@ SwaggerModule.setup('api-docs', app, document);
 
 **DTO Documentation**:
 
-- `ContactDto`: name, email, subject, message (all optional)
+- `ContactDto`: name, email, message (required); subject (optional)
 
 #### 🏥 Health Check (Root Path)
 
@@ -266,6 +266,6 @@ Once the Node.js compatibility issue is resolved, consider:
 
 ---
 
-**Status**: Implementation Complete ✅  
+**Status**: Implementation Complete & Verified ✅  
 **Documentation Ready**: Yes  
-**Interactive Testing**: Pending Node.js compatibility fix
+**Interactive Swagger UI**: Live and functional at `http://localhost:8080/api-docs` (and OpenAPI schema at `http://localhost:8080/api-docs-json`)
