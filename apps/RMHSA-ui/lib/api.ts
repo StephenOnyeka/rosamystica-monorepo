@@ -33,8 +33,8 @@ interface CacheItem<T = any> {
 
 // ---- Constants --------------------------------------------------------------
 
-// const DEFAULT_BASE_URL = process.env.NODE_ENV === "production" ? "" : "http://localhost:8080";
-const DEFAULT_BASE_URL = process.env.API_URL;
+const DEFAULT_BASE_URL = process.env.NODE_ENV === "production" ? "" : "https://rosamystica-monorepo.onrender.com";
+// const DEFAULT_BASE_URL = process.env.API_URL;
 const DEFAULT_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const DEFAULT_DEDUP_WINDOW_MS = 800; // 800 milliseconds
 const DEFAULT_TIMEOUT_MS = 15_000; // 15 seconds
