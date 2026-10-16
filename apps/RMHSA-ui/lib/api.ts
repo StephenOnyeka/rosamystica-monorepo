@@ -33,7 +33,8 @@ interface CacheItem<T = any> {
 
 // ---- Constants --------------------------------------------------------------
 
-const DEFAULT_BASE_URL = "http://localhost:8080";
+// const DEFAULT_BASE_URL = process.env.NODE_ENV === "production" ? "" : "http://localhost:8080";
+const DEFAULT_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const DEFAULT_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const DEFAULT_DEDUP_WINDOW_MS = 800; // 800 milliseconds
 const DEFAULT_TIMEOUT_MS = 15_000; // 15 seconds
@@ -48,7 +49,7 @@ const recentMutations = new Map<string, { data: any; timestamp: number }>();
 
 export function getBaseApiUrl(): string {
   const url = process.env.NEXT_PUBLIC_API_URL || DEFAULT_BASE_URL;
-  return url.endsWith("/") ? url.slice(0, -1) : url;
+  return url ? url.replace(/\/+$/, "") : "";
 }
 
 export function buildFullUrl(endpoint: string): string {
@@ -56,7 +57,8 @@ export function buildFullUrl(endpoint: string): string {
     return endpoint;
   }
   const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-  return `${getBaseApiUrl()}${cleanEndpoint}`;
+  const base = getBaseApiUrl();
+  return base ? `${base}${cleanEndpoint}` : cleanEndpoint;
 }
 
 // ---- Cache Helpers ---------------------------------------------------------
