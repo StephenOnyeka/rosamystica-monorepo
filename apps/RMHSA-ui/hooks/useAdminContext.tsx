@@ -29,8 +29,9 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         skipCache: true,
       });
       setIsAdmin(true);
-    } catch {
+    } catch (err) {
       setIsAdmin(false);
+      throw err;
     }
   };
 

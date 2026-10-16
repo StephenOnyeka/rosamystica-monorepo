@@ -47,11 +47,16 @@ const recentMutations = new Map<string, { data: any; timestamp: number }>();
 // ---- URL Helpers -----------------------------------------------------------
 
 export function getBaseApiUrl(): string {
-  const url =
-    process.env.NEXT_PUBLIC_API_URL ||
-    process.env.API_URL ||
-    DEFAULT_BASE_URL;
-  return url ? url.replace(/\/+$/, "") : "";
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "");
+  }
+  // Server-side SSR (e.g. metadata generation in Node.js) needs an absolute URL
+  if (typeof window === "undefined") {
+    const serverUrl = process.env.API_URL || DEFAULT_BASE_URL;
+    return serverUrl ? serverUrl.replace(/\/+$/, "") : "";
+  }
+  // Client-side (browser): relative URL calls the Next.js same-origin rewrite proxy
+  return "";
 }
 
 export function buildFullUrl(endpoint: string): string {

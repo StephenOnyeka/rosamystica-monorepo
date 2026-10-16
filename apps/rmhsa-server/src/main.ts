@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 // import { ConfigService } from '@nestjs/config';
 import { json, urlencoded } from 'express';
 import type { NextFunction, Request, Response } from 'express';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -20,6 +21,9 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  // Parse HTTP cookies
+  app.use(cookieParser());
 
   // Allowed origins parsed dynamically from FRONTEND_URL (.env)
   const configuredOrigins = (process.env.FRONTEND_URL ?? '')
