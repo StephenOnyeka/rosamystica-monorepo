@@ -21,26 +21,41 @@ async function bootstrap() {
     }),
   );
 
+  // Allowed origins parsed dynamically from FRONTEND_URL (.env)
+  const configuredOrigins = (process.env.FRONTEND_URL ?? '')
+    .split(',')
+    .map((u) => u.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+
   // Open CORS with credentials for httpOnly cookie support
   app.enableCors({
     origin: (
       origin: string | undefined,
       callback: (err: Error | null, allow?: boolean) => void,
     ) => {
-      if (
-        !origin ||
-        origin.startsWith('http://localhost:') ||
-        origin.startsWith('https://localhost:') ||
-        origin === 'https://www.rmhsagulu.com' ||
-        origin === 'https://rmhsagulu.com' ||
-        (process.env.FRONTEND_URL &&
-          (origin === process.env.FRONTEND_URL ||
-            origin === process.env.FRONTEND_URL.replace(/\/+$/, '')))
-      ) {
-        callback(null, true);
-      } else {
-        callback(null, true);
+      // Allow non-browser requests (e.g., cron jobs, curl, server-to-server)
+      if (!origin) {
+        return callback(null, true);
       }
+
+      // Allow localhost in development
+      if (
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('https://localhost:')
+      ) {
+        return callback(null, true);
+      }
+
+      // Match against configured FRONTEND_URL(s) from .env
+      const normalizedOrigin = origin.replace(/\/+$/, '');
+      if (
+        configuredOrigins.length === 0 ||
+        configuredOrigins.includes(normalizedOrigin)
+      ) {
+        return callback(null, true);
+      }
+
+      callback(null, true);
     },
     credentials: true,
   });
