@@ -44,7 +44,7 @@
         "RESEND_API_KEY",
         "GMAIL_USER",
         "GMAIL_PASS",
-        "NEXT_PUBLIC_API_URL"
+        "API_URL"
       ]
     }
   }
